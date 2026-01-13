@@ -304,16 +304,18 @@
 import re
 def clean_extracted_text(text, collapse_internal_spaces=True, preserve_indent=False):
     if not text: return text
-    text = text.replace('\\r\\n', '\\n').replace('\\r', '\\n')
-    lines = text.split('\\n')
+    text = text.replace(chr(13) + chr(10), chr(10)).replace(chr(13), chr(10))
+    lines = text.split(chr(10))
     cleaned_lines = []
     for line in lines:
         s = line.strip()
         if collapse_internal_spaces:
-            s = re.sub(r'[ \\t]{2,}', ' ', s)
+            while '  ' in s:
+                s = s.replace('  ', ' ')
         cleaned_lines.append(s)
-    text = '\\n'.join(cleaned_lines)
-    text = re.sub(r'\\n{3,}', '\\n\\n', text)
+    text = chr(10).join(cleaned_lines)
+    while chr(10) + chr(10) + chr(10) in text:
+        text = text.replace(chr(10) + chr(10) + chr(10), chr(10) + chr(10))
     return text
 `;
 
