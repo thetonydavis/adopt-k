@@ -3,75 +3,104 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Adopt(k) - Plan Extraction</title>
+  <title>Adopt(k) - Adoption Agreement Parser</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    body { margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, sans-serif; }
-    .upload-area-dark { background: #1E293B; border: 2px dashed #334155; transition: all 0.3s; }
-    .upload-area-dark:hover, .upload-area-dark.enabled:hover { border-color: #0b5fff; background: rgba(11, 95, 255, 0.1); }
-    .upload-area-dark.enabled { border-color: #0b5fff; opacity: 1; }
-    .status-section-dark { background: #1E293B; border: 1px solid #334155; border-radius: 0.5rem; padding: 0.75rem 1rem; }
-    .loader-dark { width: 16px; height: 16px; border: 2px solid #334155; border-top-color: #0b5fff; border-radius: 50%; animation: spin 1s linear infinite; }
+    body { background: #0F172A; margin: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+    .loader-dark { width: 18px; height: 18px; border: 2px solid #334155; border-top-color: #0b5fff; border-radius: 50%; animation: spin 1s linear infinite; }
     @keyframes spin { to { transform: rotate(360deg); } }
-    .help-btn-dark { display: flex; align-items: center; gap: 0.375rem; padding: 0.375rem 0.75rem; font-size: 0.75rem; font-weight: 500; color: #94A3B8; background: #1E293B; border: 1px solid #334155; border-radius: 0.375rem; cursor: pointer; transition: all 0.2s; }
-    .help-btn-dark:hover { color: white; border-color: #0b5fff; }
+    .upload-area-dark { border: 2px dashed #334155; background: #1E293B; transition: all 0.2s; }
+    .upload-area-dark.enabled:hover { border-color: #0b5fff; background: #1e3a5f; }
+    .status-section-dark { background: #1E293B; border: 1px solid #334155; border-radius: 0.5rem; padding: 1rem; }
+    .results-table { width: 100%; border-collapse: collapse; }
+    .results-table th { background: #0b5fff; color: white; padding: 12px 16px; text-align: left; font-weight: 600; }
+    .results-table td { padding: 10px 16px; border-bottom: 1px solid #334155; color: #E2E8F0; }
+    .results-table .section-header-row td { background: linear-gradient(90deg, #1e3a5f 0%, #1E293B 100%); color: #0b5fff; font-weight: 700; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.05em; border-left: 3px solid #0b5fff; }
+    .results-table .data-row:hover td { background: #1e3a5f; }
+    .results-table .empty-value { color: #64748B; font-style: italic; }
+    .results-overlay { position: absolute; inset: 0; background: rgba(15, 23, 42, 0.95); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 10; border-radius: 0 0 0.75rem 0.75rem; }
+    .results-overlay-text { color: white; font-size: 1.125rem; font-weight: 600; margin-top: 1.5rem; }
+    .results-overlay-subtext { color: #94A3B8; font-size: 0.875rem; margin-top: 0.5rem; }
+    .hidden { display: none !important; }
+    
+    /* Navigation Buttons */
+    .nav-btn { display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; background: #0b5fff; border: none; border-radius: 0.5rem; cursor: pointer; transition: all 0.2s; text-align: left; }
+    .nav-btn:hover { background: #0047cc; }
+    .nav-btn-icon { width: 36px; height: 36px; background: rgba(255,255,255,0.2); border-radius: 0.375rem; display: flex; align-items: center; justify-content: center; color: white; }
+    .nav-btn-content { flex: 1; }
+    .nav-btn-title { color: white; font-weight: 600; font-size: 0.875rem; }
+    .nav-btn-subtitle { color: rgba(255,255,255,0.7); font-size: 0.75rem; }
+    .nav-btn-badge { background: #10b981; color: white; font-size: 0.625rem; font-weight: 700; padding: 0.125rem 0.5rem; border-radius: 9999px; text-transform: uppercase; }
+
+    /* Toggle Switch */
     .toggle-switch { position: relative; width: 44px; height: 24px; background: #334155; border-radius: 9999px; cursor: pointer; transition: background 0.2s; flex-shrink: 0; }
     .toggle-switch.active { background: #0b5fff; }
     .toggle-switch::after { content: ''; position: absolute; top: 2px; left: 2px; width: 20px; height: 20px; background: white; border-radius: 50%; transition: transform 0.2s; }
     .toggle-switch.active::after { transform: translateX(20px); }
-    .results-table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
-    .results-table thead th { background: #0F172A; color: #94A3B8; font-weight: 600; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.05em; padding: 0.75rem 1rem; text-align: left; border-bottom: 1px solid #334155; }
-    .results-table .section-header-row td { background: linear-gradient(90deg, rgba(11, 95, 255, 0.15) 0%, rgba(11, 95, 255, 0.05) 100%); color: #0b5fff; font-weight: 700; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; padding: 0.625rem 1rem; border-left: 3px solid #0b5fff; }
-    .results-table .data-row td { padding: 0.625rem 1rem; border-bottom: 1px solid #1E293B; color: #E2E8F0; }
-    .results-table .data-row:hover td { background: rgba(30, 41, 59, 0.5); }
-    .results-table .field-cell { color: #94A3B8; font-weight: 500; width: 35%; }
-    .results-table .value-cell { color: #F1F5F9; }
-    .results-table .value-cell.empty-value { color: #475569; font-style: italic; }
-    .coverage-bar { display: flex; gap: 1rem; flex-wrap: wrap; }
-    .coverage-pill { padding: 0.375rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; }
-    .coverage-pill.certified { background: rgba(16, 185, 129, 0.2); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); }
-    .coverage-pill.review { background: rgba(245, 158, 11, 0.2); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3); }
-    .coverage-pill.silent { background: rgba(148, 163, 184, 0.2); color: #94a3b8; border: 1px solid rgba(148, 163, 184, 0.3); }
-    .status-badge { display: inline-block; padding: 0.125rem 0.5rem; border-radius: 0.25rem; font-size: 0.625rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
+
+    /* Coverage Bar */
+    .coverage-bar { display: flex; gap: 1rem; padding: 0.75rem 1rem; background: #1E293B; border-radius: 0.5rem; margin-bottom: 1rem; }
+    .coverage-pill { display: flex; align-items: center; gap: 0.5rem; padding: 0.375rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; }
+    .coverage-pill.certified { background: rgba(16, 185, 129, 0.2); color: #10b981; }
+    .coverage-pill.review { background: rgba(245, 158, 11, 0.2); color: #f59e0b; }
+    .coverage-pill.silent { background: rgba(100, 116, 139, 0.2); color: #94A3B8; }
+
+    /* Status Badges */
+    .status-badge { display: inline-block; padding: 0.125rem 0.5rem; border-radius: 0.25rem; font-size: 0.625rem; font-weight: 700; text-transform: uppercase; }
     .status-badge.certified { background: rgba(16, 185, 129, 0.2); color: #10b981; }
-    .status-badge.silent { background: rgba(148, 163, 184, 0.2); color: #94a3b8; }
-    .status-badge.ambiguous, .status-badge.uncertain, .status-badge.conflict { background: rgba(245, 158, 11, 0.2); color: #f59e0b; }
-    .source-btn { padding: 0.25rem 0.5rem; font-size: 0.625rem; font-weight: 600; color: #10b981; background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 0.25rem; cursor: pointer; transition: all 0.2s; text-transform: uppercase; letter-spacing: 0.05em; }
-    .source-btn:hover { background: rgba(16, 185, 129, 0.2); border-color: #10b981; }
-    .evidence-card { background: rgba(30, 41, 59, 0.5); border: 1px solid #334155; border-left: 3px solid #10b981; border-radius: 0.5rem; padding: 1rem; margin-bottom: 0.75rem; }
-    .evidence-meta { font-size: 0.75rem; color: #94a3b8; margin-bottom: 0.5rem; }
-    .evidence-quote { color: #e2e8f0; font-style: italic; line-height: 1.5; }
-    .results-overlay { position: absolute; inset: 0; background: rgba(15, 23, 42, 0.95); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 10; }
-    .results-overlay.hidden { display: none; }
-    .results-overlay-text { color: white; font-size: 1.125rem; font-weight: 600; margin-top: 1.5rem; }
-    .results-overlay-subtext { color: #94A3B8; font-size: 0.875rem; margin-top: 0.5rem; }
-    .clock-spinner { width: 80px; height: 80px; border-radius: 50%; background: #1E293B; border: 3px solid #334155; position: relative; }
-    .clock-hand-hour, .clock-hand-minute { position: absolute; background: #0b5fff; border-radius: 2px; transform-origin: bottom center; left: 50%; }
-    .clock-hand-hour { width: 4px; height: 20px; bottom: 50%; margin-left: -2px; animation: spin-reverse 4s linear infinite; }
-    .clock-hand-minute { width: 3px; height: 28px; bottom: 50%; margin-left: -1.5px; animation: spin-reverse 1s linear infinite; }
-    @keyframes spin-reverse { from { transform: rotate(360deg); } to { transform: rotate(0deg); } }
+    .status-badge.ambiguous { background: rgba(245, 158, 11, 0.2); color: #f59e0b; }
+    .status-badge.conflict { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
+    .status-badge.silent { background: rgba(100, 116, 139, 0.2); color: #64748B; }
+    .status-badge.uncertain { background: rgba(139, 92, 246, 0.2); color: #8b5cf6; }
+
+    /* Source Button */
+    .source-btn { background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.6875rem; font-weight: 600; cursor: pointer; transition: all 0.15s; white-space: nowrap; }
+    .source-btn:hover { background: rgba(16, 185, 129, 0.25); border-color: #10b981; }
+
+    /* Modal Styles */
     .modal-backdrop { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.75); display: flex; align-items: center; justify-content: center; z-index: 50; padding: 1rem; }
-    .modal-backdrop.hidden { display: none !important; }
-    .modal-container { background: #1E293B; border: 1px solid #334155; border-radius: 0.75rem; max-width: 700px; width: 100%; max-height: 85vh; overflow: hidden; display: flex; flex-direction: column; }
-    .modal-header { background: linear-gradient(135deg, #0b5fff 0%, #0047cc 100%); padding: 1rem 1.5rem; display: flex; align-items: center; justify-content: space-between; }
+    .modal-container { background: #1E293B; border-radius: 0.75rem; max-width: 600px; width: 100%; max-height: 90vh; overflow: hidden; display: flex; flex-direction: column; border: 1px solid #334155; }
+    .modal-header { background: linear-gradient(135deg, #0b5fff 0%, #0047cc 100%); padding: 1rem 1.5rem; display: flex; justify-content: space-between; align-items: center; }
     .modal-header h3 { color: white; font-size: 1.125rem; font-weight: 600; margin: 0; }
-    .modal-close { background: rgba(255,255,255,0.2); border: none; color: white; width: 28px; height: 28px; border-radius: 50%; cursor: pointer; font-size: 1.25rem; line-height: 1; display: flex; align-items: center; justify-content: center; }
-    .modal-close:hover { background: rgba(255,255,255,0.3); }
-    .modal-body { padding: 1.5rem; overflow-y: auto; color: #E2E8F0; flex: 1; }
+    .modal-close { background: none; border: none; color: white; font-size: 1.5rem; cursor: pointer; opacity: 0.8; transition: opacity 0.2s; line-height: 1; }
+    .modal-close:hover { opacity: 1; }
+    .modal-body { padding: 1.5rem; overflow-y: auto; color: #E2E8F0; }
     .modal-body h4 { color: #0b5fff; font-size: 1rem; font-weight: 600; margin: 1.25rem 0 0.75rem 0; }
     .modal-body h4:first-child { margin-top: 0; }
-    .modal-body p { margin: 0.5rem 0; line-height: 1.6; }
-    .modal-body ul { margin: 0.5rem 0; padding-left: 1.25rem; }
+    .modal-body p { margin: 0.5rem 0; line-height: 1.6; color: #94A3B8; }
+    .modal-body ul { margin: 0.5rem 0; padding-left: 1.5rem; color: #94A3B8; }
     .modal-body li { margin: 0.375rem 0; }
     .modal-footer { padding: 1rem 1.5rem; border-top: 1px solid #334155; display: flex; justify-content: flex-end; gap: 0.75rem; }
-    .modal-btn-primary { background: #0b5fff; color: white; border: none; padding: 0.5rem 1.25rem; border-radius: 0.375rem; font-weight: 500; cursor: pointer; }
+    .modal-btn-primary { background: #0b5fff; color: white; border: none; padding: 0.5rem 1rem; border-radius: 0.375rem; font-weight: 500; cursor: pointer; transition: background 0.2s; }
     .modal-btn-primary:hover { background: #0047cc; }
-    .highlight-box { background: rgba(11, 95, 255, 0.1); border: 1px solid rgba(11, 95, 255, 0.3); border-radius: 0.5rem; padding: 0.75rem 1rem; margin: 1rem 0; }
-    .tip-box { background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 0.5rem; padding: 0.75rem 1rem; margin: 1rem 0; }
+    .modal-btn-secondary { background: transparent; color: #94A3B8; border: 1px solid #334155; padding: 0.5rem 1rem; border-radius: 0.375rem; font-weight: 500; cursor: pointer; transition: all 0.2s; }
+    .modal-btn-secondary:hover { background: #334155; color: white; }
+    .highlight-box { background: rgba(11, 95, 255, 0.1); border: 1px solid rgba(11, 95, 255, 0.3); border-radius: 0.5rem; padding: 1rem; margin: 1rem 0; }
+    .highlight-box strong { color: #0b5fff; }
+    .tip-box { background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 0.5rem; padding: 1rem; margin: 1rem 0; }
+    .tip-box strong { color: #10b981; }
+
+    /* Evidence Card */
+    .evidence-card { background: #0F172A; border: 1px solid #334155; border-radius: 0.5rem; padding: 1rem; margin-bottom: 0.75rem; }
+    .evidence-meta { font-size: 0.75rem; color: #64748B; margin-bottom: 0.5rem; }
+    .evidence-quote { color: #E2E8F0; font-style: italic; line-height: 1.6; border-left: 3px solid #10b981; padding-left: 0.75rem; }
+
+    /* Status Grid */
     .status-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem; margin: 1rem 0; }
-    .status-explain-card { background: rgba(15, 23, 42, 0.5); border: 1px solid #334155; border-radius: 0.5rem; padding: 0.75rem; }
-    .status-explain-card .status-badge { margin-bottom: 0.5rem; }
-    .status-text { font-size: 0.75rem; color: #94A3B8; line-height: 1.4; }
+    .status-explain-card { background: #0F172A; border: 1px solid #334155; border-radius: 0.5rem; padding: 0.75rem; }
+    .status-explain-card .status-text { font-size: 0.75rem; color: #94A3B8; margin-top: 0.5rem; }
+
+    /* DPF Modal */
+    .dpf-description { color: #94A3B8; font-size: 0.875rem; margin-bottom: 1.5rem; }
+    .dpf-guarantee { background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 0.5rem; padding: 1rem; margin-bottom: 1.5rem; display: flex; align-items: flex-start; gap: 0.75rem; }
+    .dpf-guarantee-icon { color: #10b981; flex-shrink: 0; }
+    .dpf-guarantee-title { color: white; font-weight: 600; font-size: 0.875rem; }
+    .dpf-guarantee-text { color: #94A3B8; font-size: 0.8125rem; }
+    .dpf-categories { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; }
+    .dpf-category { background: #0F172A; border: 1px solid #334155; border-radius: 0.5rem; padding: 1.25rem; text-align: center; }
+    .dpf-category-icon { width: 48px; height: 48px; background: #0b5fff; border-radius: 0.5rem; display: flex; align-items: center; justify-content: center; margin: 0 auto 0.75rem; font-size: 1.25rem; }
+    .dpf-category-title { color: white; font-weight: 600; font-size: 0.875rem; }
+    .dpf-category-desc { color: #64748B; font-size: 0.75rem; margin-top: 0.25rem; }
   </style>
 </head>
 <body>
@@ -80,13 +109,33 @@
     <div class="px-5 pt-8 pb-4">
       <div class="flex items-start justify-between">
         <h1 class="text-4xl font-bold text-white tracking-tight leading-none -mt-1">Adopt<span class="ml-0.5 text-[#0b5fff]">(k)</span></h1>
-        <button id="help-btn" class="help-btn-dark ml-4 flex-shrink-0">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-          Help
-        </button>
       </div>
       <p class="text-sm text-[#94A3B8] mt-2">Adoption Agreement Parser</p>
+      
+      <div class="mt-4 space-y-2">
+        <button id="how-to-use-btn" class="nav-btn w-full">
+          <div class="nav-btn-icon">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+          </div>
+          <div class="nav-btn-content">
+            <div class="nav-btn-title">How to Use</div>
+            <div class="nav-btn-subtitle">Step-by-step guide</div>
+          </div>
+          <svg class="w-5 h-5 text-white/50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+        </button>
+        <button id="whats-new-btn" class="nav-btn w-full">
+          <div class="nav-btn-icon">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+          </div>
+          <div class="nav-btn-content">
+            <div class="nav-btn-title">What's New</div>
+            <div class="nav-btn-subtitle">Certification system</div>
+          </div>
+          <span class="nav-btn-badge">NEW</span>
+        </button>
+      </div>
     </div>
+    
     <div class="p-6 flex-1 overflow-y-auto">
       <div class="mb-6">
         <h2 class="text-sm font-semibold text-[#0b5fff] uppercase tracking-wider mb-3">1. LLM Model</h2>
@@ -98,6 +147,7 @@
         </select>
         <p class="mt-1 text-xs text-[#94A3B8]">Select the model to use, or keep the default (recommended)</p>
       </div>
+      
       <div class="mb-6 pt-4 border-t border-[#334155]">
         <h2 class="text-sm font-semibold text-[#0b5fff] uppercase tracking-wider mb-3">2. Select Adoption Agreement</h2>
         <label id="upload-label" class="upload-area-dark flex flex-col items-center justify-center w-full h-32 rounded-lg cursor-pointer opacity-50 pointer-events-none">
@@ -108,6 +158,7 @@
           <input id="file-upload" type="file" class="hidden" accept=".pdf" />
         </label>
       </div>
+      
       <div class="mb-6 pt-4 border-t border-[#334155]">
         <h2 class="text-sm font-semibold text-[#0b5fff] uppercase tracking-wider mb-3">3. Status &amp; Processing</h2>
         <div id="status-container" class="status-section-dark">
@@ -118,45 +169,41 @@
           <div id="file-info" class="text-xs text-[#94A3B8] mt-3 hidden"></div>
         </div>
         <div id="error-box" class="hidden mt-3 p-3 bg-red-500/20 border border-red-400/30 rounded-lg text-xs text-red-200 break-words max-h-60 overflow-y-auto"></div>
-        <button id="retry-init-btn" class="hidden w-full mt-3 py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-[#0b5fff] hover:bg-[#0047cc] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#0b5fff]">Retry Initialization</button>
+        <button id="retry-init-btn" class="hidden w-full mt-3 py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-[#0b5fff] hover:bg-[#0047cc]">Retry Initialization</button>
       </div>
-      <div class="mb-6 pt-4 border-t border-[#334155]">
-        <h2 class="text-sm font-semibold text-[#0b5fff] uppercase tracking-wider mb-3">4. Accuracy Settings</h2>
-        <div class="space-y-3">
-          <div class="flex items-center justify-between">
-            <div><div class="text-sm font-medium text-white">Strict Mode</div><div class="text-xs text-[#94A3B8]">Only show certified values</div></div>
-            <div id="strict-mode-toggle" class="toggle-switch active"></div>
-          </div>
-          <div class="flex items-center justify-between">
-            <div><div class="text-sm font-medium text-white">Show Reasons</div><div class="text-xs text-[#94A3B8]">Explain why fields are blank</div></div>
-            <div id="show-reasons-toggle" class="toggle-switch active"></div>
-          </div>
-        </div>
+
+      <div class="pt-4 border-t border-[#334155]">
+        <p class="text-xs text-[#64748B]"><strong class="text-[#94A3B8]">Trust Contract:</strong> If a value appears, it's certified correct. Empty fields mean we couldn't verify with certainty.</p>
       </div>
-    </div>
-    <div class="p-4 border-t border-[#334155] bg-[#1E293B]/50">
-      <p class="text-xs text-[#94A3B8]"><strong class="text-white">Trust Contract:</strong> If a value appears, it's certified correct. Empty fields mean we couldn't verify with certainty.</p>
     </div>
   </aside>
+
   <main class="flex-1 overflow-y-auto bg-[#0F172A]">
     <div class="p-8">
-      <div id="results-header" class="bg-gradient-to-r from-[#0b5fff] to-[#0047cc] p-6 rounded-t-xl shadow-lg border border-[#1e4ec1]">
-        <div class="flex items-start justify-between">
-          <div><h2 class="text-2xl font-bold text-white">Plan Extraction Results</h2><p class="text-sm text-white/90 mt-1">Review the extracted data below. Certified values are verified from the source document.</p></div>
-          <div class="text-right"><div class="text-xs text-white/70">Trust Level</div><div class="text-lg font-bold text-white">100% or Silent</div></div>
+      <div id="results-header" class="bg-gradient-to-r from-[#0b5fff] to-[#0047cc] p-6 rounded-t-xl shadow-lg border border-[#1e4ec1] flex justify-between items-start">
+        <div>
+          <h2 class="text-2xl font-bold text-white">Plan Extraction Results</h2>
+          <p class="text-sm text-white/90 mt-1">Review the extracted data below. Certified values are verified from the source document.</p>
         </div>
-        <div id="coverage-bar" class="coverage-bar mt-4 hidden"></div>
+        <div class="text-right">
+          <div class="text-xs text-white/70">Trust Level</div>
+          <div class="text-lg font-bold text-white">100% or Silent</div>
+        </div>
       </div>
+
+      <div id="coverage-bar" class="coverage-bar hidden"></div>
+
       <div id="results-container" class="relative bg-[#1E293B] shadow-sm border-x border-b border-[#334155] rounded-b-xl">
-        <div id="results-table" class="overflow-x-auto"><p class="text-[#94A3B8] text-center py-20">Waiting for PDF upload and analysis...</p></div>
+        <div id="results-table" class="overflow-x-auto">
+          <p class="text-[#94A3B8] text-center py-20">Waiting for PDF upload and analysis...</p>
+        </div>
         <div id="results-loading-overlay" class="results-overlay hidden">
-          <div class="clock-spinner"><div class="clock-hand-hour"></div><div class="clock-hand-minute"></div></div>
-          <div class="results-overlay-text" id="results-overlay-text">Analyzing adoption agreement...</div>
+          <div class="loader-dark" style="width: 48px; height: 48px; border-width: 4px;"></div>
+          <div class="results-overlay-text">Analyzing adoption agreement...</div>
           <div class="results-overlay-subtext">⏪ Saving you hours of manual data entry</div>
         </div>
       </div>
 
-      <!-- EXPORT PANEL -->
       <div class="mt-4 bg-[#1E293B] rounded-xl shadow-sm border border-[#334155] overflow-hidden">
         <div class="px-6 py-3 bg-gradient-to-r from-[#0b5fff] to-[#0047cc] flex items-center justify-between">
           <h3 class="text-sm font-semibold text-white">Export Options</h3>
@@ -174,7 +221,7 @@
       </div>
     </div>
 
-    <!-- HELP MODAL -->
+    <!-- HOW TO USE MODAL -->
     <div id="help-modal" class="modal-backdrop hidden">
       <div class="modal-container">
         <div class="modal-header">
@@ -217,18 +264,43 @@
             </div>
           </div>
 
-          <h4>⚙️ Accuracy Settings</h4>
-          <ul>
-            <li><strong>Strict Mode:</strong> Only show certified values (recommended)</li>
-            <li><strong>Show Reasons:</strong> Display why fields are blank</li>
-          </ul>
-
           <div class="tip-box">
             <strong>💡 Pro Tip:</strong> Click the "Source" button on any certified field to see the exact document text that supports the extracted value.
           </div>
         </div>
         <div class="modal-footer">
           <button id="help-modal-close-2" class="modal-btn-primary">Got it!</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- WHAT'S NEW MODAL -->
+    <div id="whats-new-modal" class="modal-backdrop hidden">
+      <div class="modal-container">
+        <div class="modal-header" style="background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%);">
+          <h3>✨ What's New</h3>
+          <button id="whats-new-modal-close" class="modal-close">&times;</button>
+        </div>
+        <div class="modal-body">
+          <h4>🔒 Certification System</h4>
+          <p>Every extracted value now comes with a certification status. If Adopt(k) returns a value, you can trust it's correct—no double-checking needed.</p>
+          
+          <div class="highlight-box">
+            <strong>100% Correct or Silent:</strong> We'd rather leave a field blank than give you uncertain data.
+          </div>
+
+          <h4>📋 Source Evidence</h4>
+          <p>Click the "Source" button on any certified field to see exactly where in the document we found that information, including page number and verbatim quote.</p>
+
+          <h4>📊 Coverage Bar</h4>
+          <p>The new coverage bar shows at a glance how many fields were certified, need review, or are silent. Track extraction quality instantly.</p>
+
+          <div class="tip-box">
+            <strong>Coming Soon:</strong> Batch processing, custom field mapping, and integration with your existing TPA workflows.
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button id="whats-new-close-btn" class="modal-btn-primary">Got it!</button>
         </div>
       </div>
     </div>
@@ -240,666 +312,65 @@
           <h3>📋 Source Evidence</h3>
           <button id="evidence-modal-close" class="modal-close">&times;</button>
         </div>
-        <div class="modal-body" id="evidence-body">
-          <!-- Content populated by JavaScript -->
-        </div>
+        <div class="modal-body" id="evidence-body"></div>
         <div class="modal-footer">
           <button id="evidence-close-btn" class="modal-btn-primary">Close</button>
         </div>
       </div>
     </div>
 
-  </main>
-</div>
-
-<script>
-(function() {
-  const EXTRACTOR_API_BASE = "https://docuwaivz-plan-extractor-gursnjup4q-uc.a.run.app";
-
-  let pyodideInstance = null;
-  let pdfjsLibInstance = null;
-  let initializationInProgress = false;
-  let lastExtractionRows = null;
-  let lastHtmlTableString = "";
-
-  // Mode settings
-  let STRICT_MODE = true;
-  let SHOW_BLANK_REASONS = true;
-
-  // ---------- Dynamic runtime loaders ----------
-  function loadPdfJsIfNeeded() {
-    return new Promise((resolve, reject) => {
-      if (window.pdfjsLib && typeof window.pdfjsLib.getDocument === 'function') { resolve(); return; }
-      let script = document.querySelector('script[data-docuwaivz-pdfjs]');
-      if (!script) {
-        script = document.createElement('script');
-        script.src = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js";
-        script.async = true;
-        script.setAttribute('data-docuwaivz-pdfjs', '1');
-        document.head.appendChild(script);
-      }
-      script.addEventListener('load', () => { window.pdfjsLib ? resolve() : reject(new Error("PDF.js not available")); }, { once: true });
-      script.addEventListener('error', () => reject(new Error("PDF.js failed to load")), { once: true });
-    });
-  }
-
-  function loadPyodideRuntimeIfNeeded() {
-    return new Promise((resolve, reject) => {
-      if (window.loadPyodide) { resolve(); return; }
-      let script = document.querySelector('script[data-docuwaivz-pyodide]');
-      if (!script) {
-        script = document.createElement('script');
-        script.src = "https://cdn.jsdelivr.net/pyodide/v0.25.0/full/pyodide.js";
-        script.async = true;
-        script.setAttribute('data-docuwaivz-pyodide', '1');
-        document.head.appendChild(script);
-      }
-      script.addEventListener('load', () => { window.loadPyodide ? resolve() : reject(new Error("Pyodide not available")); }, { once: true });
-      script.addEventListener('error', () => reject(new Error("Pyodide failed to load")), { once: true });
-    });
-  }
-
-  // ---------- Python cleaning script ----------
-  const pythonCleaningScript = `
-import re
-def clean_extracted_text(text, collapse_internal_spaces=True, preserve_indent=False):
-    if not text: return text
-    text = text.replace(chr(13) + chr(10), chr(10)).replace(chr(13), chr(10))
-    lines = text.split(chr(10))
-    cleaned_lines = []
-    for line in lines:
-        s = line.strip()
-        if collapse_internal_spaces:
-            while '  ' in s:
-                s = s.replace('  ', ' ')
-        cleaned_lines.append(s)
-    text = chr(10).join(cleaned_lines)
-    while chr(10) + chr(10) + chr(10) in text:
-        text = text.replace(chr(10) + chr(10) + chr(10), chr(10) + chr(10))
-    return text
-`;
-
-  // ---------- Field list ----------
-  const displayOrderMD = `## Company Information
-Company Name
-Company Street
-Company Street2
-City, State, ZIP
-Company Telephone
-EIN
-Form of Business
-Entity Type
-
-## Corporate Details
-Employer's Tax Year End
-Plan Year End
-Related Employers
-Related Employers Detail
-Multiple Employer Plan
-Affiliated_Employers
-
-## Plan Information
-Plan Name
-Original Effective Date
-Restatement Effective Date
-Plan Number
-Type of Plan
-Plan Year
-
-## Eligibility
-Eligible Employees
-Are Union Employees Excluded?
-Are Non-resident aliens Employees Excluded?
-Are Part time Employees Excluded?
-Are Employees as the result of a transaction described in Code section 410(b)(6)(C) Excluded?
-List of Excluded Employee Groups
-Is There More Than One Service Requirement?
-Service Requirement
-Hour Requirement
-Minimum Age Requirement
-Entry Date
-Elapsed Time or Hours of Service
-Effective Date of Age/Service Requirement (Amnesty Date)
-Counting Predecessor Service
-
-## Compensation
-Definition of Compensation
-Total Compensation
-Plan Compensation Exclusions
-Period for Determining Compensation
-Using Entry Date Compensation
-
-## Contributions
-Employer Non-Elective/Profit Sharing Contribution
-Employer Non-Elective/Profit Sharing Contribution Formula
-Employer Non-Elective/Profit Sharing Contribution Formula Type
-Employer Non-Elective/Profit Sharing Contribution Allocation Conditions
-Exceptions to Employer Non-Elective/Profit Sharing Contribution Allocation Conditions
-Salary Deferrals
-Roth Deferrals
-ADP/ACP Testing Method
-In-Plan Roth Transfers/Conversions Permitted
-Automatic Deferral Election
-Automatic Deferral Election Start Date
-Automatic Deferral Election Initial Percentage
-Automatic Deferral Election Increase
-Automatic Deferral Election Maximum Percentage
-Automatic Deferral Election Applicable To
-Matching Contributions
-Matching Contribution Formula
-Limit on Matching Contribution
-Period for Determining Matching Contributions
-Matching Contribution Allocation Conditions
-Exceptions to Matching Contribution Allocation Conditions
-
-## Safe Harbor
-Safe Harbor 401(k) Plan
-Is This a QACA Plan?
-Safe Harbor Type
-Safe Harbor Formula
-Period for Determining Safe Harbor Contribution
-Eligibility for Safe Harbor Contribution
-Safe Harbor Delayed Effective Date
-
-## Vesting
-Normal Retirement Age
-Early Retirement Age
-Retirement Age Years of Participation Required
-Retirement Age Years of Employment Required
-Vesting Schedule
-Vesting Exclusions
-Vesting for QACA
-Immediate Vesting Upon Death, Disability, ERA
-
-## Distributions
-In-Service Distributions at Age 59.5
-Sources Available for In-Service Distributions at Age 59.5
-Hardship Distributions
-Sources Available for Hardship Distributions
-Loans Allowed
-Number of Loans Allowed at a Time
-Loan Rate of Interest
-
-## Administration
-Top Paid Group Applicable
-Owner/Trustee Name
-Trustee Title
-Will a Recipient be entitled to request a Direct In-Plan Roth Rollover
-`;
-
-  // ---------- DOM helpers ----------
-  function qs(sel) { return document.querySelector('#docuwaivz-app ' + sel); }
-  function showOverlay(message) {
-    const overlay = qs('#results-loading-overlay');
-    const msgEl = qs('#results-overlay-text');
-    if (overlay) overlay.style.display = 'flex';
-    if (msgEl && message) msgEl.textContent = message;
-  }
-  function hideOverlay() {
-    const overlay = qs('#results-loading-overlay');
-    if (overlay) overlay.style.display = 'none';
-  }
-  function updateStatus(text, isError = false, hideLoader = false) {
-    const statusText = qs('#status-text');
-    const loader = qs('#py-loader');
-    if (statusText) {
-      statusText.innerText = text;
-      statusText.style.color = isError ? '#FCA5A5' : (hideLoader ? '#6EE7B7' : 'white');
-    }
-    if (loader) {
-      if (hideLoader || isError) loader.classList.add('hidden');
-      else loader.classList.remove('hidden');
-    }
-  }
-  function showError(message) {
-    const errorBox = qs('#error-box');
-    const retryBtn = qs('#retry-init-btn');
-    if (errorBox) {
-      errorBox.innerHTML = `<strong>Error:</strong> ${escapeHtml(message)}`;
-      errorBox.classList.remove('hidden');
-    }
-    if (retryBtn && initializationInProgress) retryBtn.classList.remove('hidden');
-  }
-  function enableUpload() {
-    const uploadLabel = qs('#upload-label');
-    const uploadIcon = qs('#upload-icon');
-    if (uploadLabel) {
-      uploadLabel.classList.remove('opacity-50', 'pointer-events-none');
-      uploadLabel.classList.add('enabled');
-    }
-    if (uploadIcon) {
-      uploadIcon.classList.remove('text-[#64748B]');
-      uploadIcon.classList.add('text-[#0b5fff]');
-    }
-  }
-  function sanitizeStringForPython(s) { return s.replace(/\0/g, ''); }
-  function escapeHtml(unsafe) {
-    if (unsafe === null || unsafe === undefined) return '';
-    return String(unsafe).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
-  }
-
-  // ---------- Display helpers ----------
-  function parseDisplayOrder(markdown) {
-    const lines = markdown.split('\n');
-    const orderedFields = [];
-    let currentGroup = null;
-    lines.forEach(line => {
-      line = line.trim();
-      if (!line) return;
-      if (line.startsWith('##')) currentGroup = line.replace(/^#+\s*/, '').trim();
-      else if (currentGroup) orderedFields.push({ group: currentGroup, fieldName: line });
-    });
-    return orderedFields;
-  }
-  function buildRowLookup(rows) {
-    const lookup = {};
-    rows.forEach(r => { if (r && typeof r.label === 'string') lookup[r.label] = r; });
-    return lookup;
-  }
-  function isCertified(status) {
-    const st = (status || '').toUpperCase();
-    return st === 'CERTIFIED' || st === 'OK' || st === '';
-  }
-  function getStatusClass(status) {
-    const st = (status || '').toUpperCase();
-    if (st === 'CERTIFIED' || st === 'OK') return 'certified';
-    if (st === 'AMBIGUOUS') return 'ambiguous';
-    if (st === 'CONFLICT') return 'conflict';
-    if (st === 'SILENT' || st === 'NOT_FOUND') return 'silent';
-    return 'uncertain';
-  }
-  function computeCoverage(rows, displayOrder) {
-    const rowLookup = buildRowLookup(rows);
-    let certified = 0, review = 0, silent = 0;
-    displayOrder.forEach(item => {
-      const rowObj = rowLookup[item.fieldName];
-      const status = (rowObj?.status || '').toUpperCase();
-      const value = rowObj?.value || '';
-      if (status === 'CERTIFIED' || status === 'OK' || (value && !status)) certified++;
-      else if (status === 'SILENT' || status === 'NOT_FOUND' || !value) silent++;
-      else review++;
-    });
-    return { certified, review, silent, total: displayOrder.length };
-  }
-  function renderCoverage(rows) {
-    const coverageBar = qs('#coverage-bar');
-    if (!coverageBar) return;
-    const displayOrder = parseDisplayOrder(displayOrderMD);
-    const c = computeCoverage(rows, displayOrder);
-    coverageBar.innerHTML = `
-      <div class="coverage-pill certified">✓ Certified: ${c.certified}</div>
-      <div class="coverage-pill review">⚠ Needs Review: ${c.review}</div>
-      <div class="coverage-pill silent">— Silent: ${c.silent}</div>
-    `;
-    coverageBar.classList.remove('hidden');
-  }
-
-  function buildHtmlTable(rows) {
-    const displayOrder = parseDisplayOrder(displayOrderMD);
-    const rowLookup = buildRowLookup(rows);
-    let html = '<table class="results-table"><thead><tr><th>Field Name</th><th>Value</th></tr></thead>';
-    let currentGroup = null;
-
-    displayOrder.forEach(item => {
-      const rowObj = rowLookup[item.fieldName];
-      const rawValue = rowObj?.value ?? '';
-      const status = rowObj?.status || '';
-      const reason = rowObj?.reason || '';
-      const evidence = Array.isArray(rowObj?.evidence) ? rowObj.evidence : [];
-      const value = (typeof rawValue === 'string') ? rawValue.trim() : rawValue;
-      const certified = isCertified(status);
-      const statusClass = getStatusClass(status);
-      const showValue = STRICT_MODE ? (certified && value) : !!value;
-      const valueExists = showValue && value !== null && value !== undefined && value !== '';
-
-      if (item.group !== currentGroup) {
-        if (currentGroup !== null) html += '</tbody>';
-        currentGroup = item.group;
-        html += `<tbody><tr class="section-header-row"><td colspan="2">${escapeHtml(currentGroup)}</td></tr>`;
-      }
-
-      let statusBadge = '';
-      if (!certified && SHOW_BLANK_REASONS && status) {
-        statusBadge = `<span class="status-badge ${statusClass}">${escapeHtml(status)}</span>`;
-        if (reason) statusBadge += `<span style="margin-left: 0.5rem; font-size: 0.75rem; color: #94A3B8;">${escapeHtml(reason)}</span>`;
-      }
-
-      let sourceBtn = '';
-      if (certified && evidence.length > 0 && valueExists) {
-        const evidenceData = JSON.stringify({ field: item.fieldName, evidence: evidence });
-        sourceBtn = `<button class="source-btn" onclick='window.showEvidence(${JSON.stringify(evidenceData)})'>Source</button>`;
-      }
-
-      html += `<tr class="data-row"><td class="field-cell">${escapeHtml(item.fieldName)}</td><td class="value-cell ${valueExists ? '' : 'empty-value'}"><div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 0.75rem;"><div style="flex: 1; min-width: 0;">${valueExists ? escapeHtml(value) : ''}${!valueExists && statusBadge ? `<div style="margin-top: 0.25rem;">${statusBadge}</div>` : ''}</div>${sourceBtn ? `<div style="flex-shrink: 0;">${sourceBtn}</div>` : ''}</div></td></tr>`;
-    });
-
-    if (currentGroup !== null) html += '</tbody>';
-    html += '</table>';
-    return html;
-  }
-
-  function renderData(rows) {
-    const resultsTable = qs('#results-table');
-    if (!resultsTable) return;
-    const htmlTable = buildHtmlTable(rows);
-    lastHtmlTableString = htmlTable;
-    lastExtractionRows = rows;
-    resultsTable.innerHTML = htmlTable;
-    renderCoverage(rows);
-  }
-
-  // ========== EVIDENCE MODAL ==========
-  window.showEvidence = function(dataStr) {
-    try {
-      const data = typeof dataStr === 'string' ? JSON.parse(dataStr) : dataStr;
-      const modal = document.getElementById('evidence-modal');
-      const body = document.getElementById('evidence-body');
-      if (!modal || !body) { console.error('Evidence modal elements not found'); return; }
-      const field = data.field || 'Field';
-      const evidence = Array.isArray(data.evidence) ? data.evidence : [];
-      body.innerHTML = `
-        <div style="margin-bottom: 1rem;">
-          <div style="font-size: 1.125rem; font-weight: 600; color: white;">${escapeHtml(field)}</div>
-          <div style="font-size: 0.875rem; color: #94A3B8;">Certified source excerpts from the document</div>
+    <!-- DPF MODAL -->
+    <div id="dpf-modal" class="modal-backdrop hidden">
+      <div class="modal-container" style="max-width: 700px;">
+        <div class="modal-header">
+          <h3>📄 Generate Pre-Filled DPF</h3>
+          <button id="dpf-modal-close" class="modal-close">&times;</button>
         </div>
-        ${evidence.map(ev => `<div class="evidence-card"><div class="evidence-meta">${ev.page ? `Page ${escapeHtml(String(ev.page))}` : ''}${ev.section ? ` • Section ${escapeHtml(String(ev.section))}` : ''}</div><div class="evidence-quote">"${escapeHtml(ev.quote || '')}"</div></div>`).join('')}
-        ${evidence.length === 0 ? '<p style="color: #94A3B8;">No source evidence available.</p>' : ''}
-      `;
-      modal.classList.remove('hidden');
-      modal.style.display = 'flex';
-    } catch (e) { console.error('Failed to parse evidence:', e); }
-  };
-
-  window.closeEvidenceModal = function() {
-    const modal = document.getElementById('evidence-modal');
-    if (modal) { modal.classList.add('hidden'); modal.style.display = 'none'; }
-  };
-
-  // ---------- Backend call ----------
-  async function callExtractorBackend(cleanedText) {
-    const modelSelect = qs('#llm-model');
-    const model = modelSelect ? modelSelect.value : null;
-    const payload = { document_text: cleanedText, vendor_hint: "Principal 401(k) Nonstandardized Adoption Agreement", model: model, display_order_md: displayOrderMD, strict_mode: true, return_evidence: true };
-    const resp = await fetch(`${EXTRACTOR_API_BASE}/extract-plan`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
-    if (!resp.ok) { const text = await resp.text(); throw new Error(`Extractor HTTP ${resp.status}: ${text.slice(0, 200)}...`); }
-    const data = await resp.json();
-    if (!data.rows || !Array.isArray(data.rows)) throw new Error("Extractor response missing rows[].");
-    console.log("Model used by backend:", data.model_used);
-    return data.rows;
-  }
-
-  // ---------- Export helpers ----------
-  function ensureExtractionAvailable() {
-    if (!lastExtractionRows || !Array.isArray(lastExtractionRows) || lastExtractionRows.length === 0) { alert("No extraction available. Run an extraction first."); return false; }
-    return true;
-  }
-  function downloadFile(filename, mimeType, content) {
-    const blob = new Blob([content], { type: mimeType });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a'); a.href = url; a.download = filename;
-    document.body.appendChild(a); a.click(); a.remove();
-    URL.revokeObjectURL(url);
-  }
-  async function handleExportCopy() {
-    if (!ensureExtractionAvailable()) return;
-    try { await navigator.clipboard.writeText(lastHtmlTableString || buildHtmlTable(lastExtractionRows)); alert("HTML table copied to clipboard."); }
-    catch (err) { alert("Copy failed. See console."); }
-  }
-  function handleExportHtml() {
-    if (!ensureExtractionAvailable()) return;
-    const htmlTable = lastHtmlTableString || buildHtmlTable(lastExtractionRows);
-    downloadFile("plan_extraction.html", "text/html;charset=utf-8", `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Plan Extraction</title></head><body>${htmlTable}</body></html>`);
-  }
-  function handleExportCsv() {
-    if (!ensureExtractionAvailable()) return;
-    const displayOrder = parseDisplayOrder(displayOrderMD);
-    const rowLookup = buildRowLookup(lastExtractionRows);
-    let csv = 'Field Name,Value,Status\n';
-    displayOrder.forEach(item => {
-      const rowObj = rowLookup[item.fieldName];
-      const rawValue = rowObj?.value ?? '';
-      const status = rowObj?.status || '';
-      let value = (typeof rawValue === 'string') ? rawValue.trim() : (rawValue ?? '');
-      csv += `"${item.fieldName.replace(/"/g, '""')}","${String(value).replace(/"/g, '""')}","${String(status).replace(/"/g, '""')}"\n`;
-    });
-    downloadFile("plan_extraction.csv", "text/csv;charset=utf-8", csv);
-  }
-  function handleExportPdf() {
-    if (!ensureExtractionAvailable()) return;
-    const displayOrder = parseDisplayOrder(displayOrderMD);
-    const rowLookup = buildRowLookup(lastExtractionRows);
-    let pdfHtml = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Plan Extraction Report</title><style>body{font-family:'Segoe UI',sans-serif;font-size:11px;color:#1e293b;}table{width:100%;border-collapse:collapse;}th{background:#0b5fff;color:white;padding:10px;text-align:left;}td{padding:8px;border:1px solid #cbd5e1;}.section-header{background:#f1f5f9;color:#0b5fff;font-weight:700;border-left:4px solid #0b5fff;}</style></head><body><h1 style="color:#0b5fff;">Plan Extraction Report</h1><table><thead><tr><th>Field Name</th><th>Value</th></tr></thead><tbody>`;
-    let currentGroup = null;
-    displayOrder.forEach(item => {
-      const rowObj = rowLookup[item.fieldName];
-      const rawValue = rowObj?.value ?? '';
-      const value = (typeof rawValue === 'string') ? rawValue.trim() : (rawValue ?? '');
-      if (item.group !== currentGroup) { currentGroup = item.group; pdfHtml += `<tr><td colspan="2" class="section-header">${escapeHtml(currentGroup)}</td></tr>`; }
-      pdfHtml += `<tr><td>${escapeHtml(item.fieldName)}</td><td>${escapeHtml(value)}</td></tr>`;
-    });
-    pdfHtml += `</tbody></table><p style="margin-top:20px;color:#64748b;font-size:10px;">Generated by Adopt(k) - Waivz.ai</p></body></html>`;
-    const printWindow = window.open('', '_blank');
-    printWindow.document.write(pdfHtml);
-    printWindow.document.close();
-    printWindow.focus();
-    setTimeout(() => printWindow.print(), 250);
-  }
-  async function generateDPF() {
-    if (!lastExtractionRows || lastExtractionRows.length === 0) { alert("No extraction data available. Please upload and process an adoption agreement PDF first."); return; }
-    const companyRow = lastExtractionRows.find(r => r.label === "Company Name");
-    const companyName = companyRow ? companyRow.value : "Plan";
-    const btn = qs('#export-nextstep-btn');
-    const originalText = btn ? btn.innerHTML : '';
-    if (btn) { btn.innerHTML = "⏳ Generating DPF..."; btn.disabled = true; btn.style.opacity = "0.7"; }
-    try {
-      const response = await fetch(`${EXTRACTOR_API_BASE}/fill-dpf`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ rows: lastExtractionRows, company_name: companyName }) });
-      if (!response.ok) { const errorText = await response.text(); throw new Error(errorText || `Server error: ${response.status}`); }
-      const blob = await response.blob();
-      const safeCompany = companyName.replace(/[^a-zA-Z0-9\s\-_]/g, '').trim().replace(/\s+/g, '_').substring(0, 30);
-      const filename = `DPF_${safeCompany}_${new Date().toISOString().split('T')[0]}.docx`;
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a'); a.href = url; a.download = filename;
-      document.body.appendChild(a); a.click(); a.remove();
-      URL.revokeObjectURL(url);
-      alert(`✅ DPF Generated Successfully!\n\nFilename: ${filename}`);
-    } catch (error) { console.error("DPF generation failed:", error); alert(`❌ Failed to generate DPF\n\n${error.message}`); }
-    finally { if (btn) { btn.innerHTML = originalText; btn.disabled = false; btn.style.opacity = "1"; } }
-  }
-
-  // ---------- Engine init ----------
-  async function initSystemEngineWithRuntimes() {
-    try { await Promise.all([loadPdfJsIfNeeded(), loadPyodideRuntimeIfNeeded()]); }
-    catch (err) { console.error(err); updateStatus("Runtime load failed", true, true); showError("Engine failed to load required runtimes: " + err.message); return; }
-    await initSystemEngine();
-  }
-  async function initSystemEngine() {
-    if (initializationInProgress) return;
-    initializationInProgress = true;
-    const errorBox = qs('#error-box');
-    const retryBtn = qs('#retry-init-btn');
-    const loader = qs('#py-loader');
-    if (errorBox) errorBox.classList.add('hidden');
-    if (retryBtn) retryBtn.classList.add('hidden');
-    if (loader) loader.classList.remove('hidden');
-
-    updateStatus("Step 1/3: Initializing PDF Reader...");
-    if (!window.pdfjsLib || typeof window.pdfjsLib.getDocument !== 'function') { updateStatus("Initialization Failed (Step 1)", true, true); showError("Step 1 Failed: PDF.js library failed to load."); return; }
-    pdfjsLibInstance = window.pdfjsLib;
-
-    updateStatus("Step 2/3: Loading Python Cleaning Utility...");
-    try {
-      pyodideInstance = await window.loadPyodide({ indexURL: "https://cdn.jsdelivr.net/pyodide/v0.25.0/full/" });
-      await pyodideInstance.runPythonAsync("import sys");
-    } catch (err) { console.error(err); updateStatus("Initialization Failed (Step 2)", true, true); showError(`Step 2 Failed: ${err.message}`); return; }
-
-    updateStatus("Step 3/3: Loading Cleaning Scripts...");
-    try { await pyodideInstance.runPythonAsync(sanitizeStringForPython(pythonCleaningScript)); }
-    catch (err) { console.error(err); updateStatus("Initialization Failed (Step 3)", true, true); showError("Step 3 Failed: Error executing the cleaning script."); return; }
-
-    updateStatus("Engine Ready", false, true);
-    enableUpload();
-    initializationInProgress = false;
-  }
-
-  // ---------- Wiring events ----------
-  function wireFileUpload() {
-    const fileInput = qs('#file-upload');
-    if (!fileInput) return;
-    fileInput.addEventListener('change', async (event) => {
-      const file = event.target.files[0];
-      if (!file || file.type !== 'application/pdf') { alert("Please upload a valid PDF file."); return; }
-      const fileInfo = qs('#file-info');
-      const errorBox = qs('#error-box');
-      if (!pyodideInstance || !pdfjsLibInstance) { showError("Engine is not ready."); return; }
-      if (errorBox) errorBox.classList.add('hidden');
-      updateStatus("Preparing Upload...", false, false);
-      showOverlay("Processing selected PDF...");
-      if (fileInfo) { fileInfo.textContent = `File: ${file.name} | Size: ${(file.size / 1024).toFixed(1)} KB`; fileInfo.classList.remove('hidden'); }
-
-      const reader = new FileReader();
-      reader.onload = async (e) => {
-        try {
-          const typedarray = new Uint8Array(e.target.result);
-          updateStatus("Extracting PDF Text...", false, false);
-          showOverlay("Extracting text from PDF...");
-          const loadingTask = pdfjsLibInstance.getDocument({ data: typedarray });
-          const pdf = await loadingTask.promise;
-          let fullText = "";
-          for (let i = 1; i <= pdf.numPages; i++) {
-            if (i % 20 === 0 || i === 1) updateStatus(`Extracting Text (Page ${i}/${pdf.numPages})...`, false, false);
-            const page = await pdf.getPage(i);
-            const textContent = await page.getTextContent();
-            fullText += textContent.items.map(item => item.str).join(' ') + "\n";
-          }
-          updateStatus("Normalizing Text...", false, false);
-          showOverlay("Normalizing extracted text...");
-          const cleanFunc = pyodideInstance.globals.get('clean_extracted_text');
-          const cleanedText = cleanFunc(sanitizeStringForPython(fullText), true, false);
-          updateStatus("Sending data to extractor…", false, false);
-          showOverlay("Analyzing adoption agreement...");
-          const rows = await callExtractorBackend(cleanedText);
-          renderData(rows);
-          hideOverlay();
-          updateStatus("Analysis Complete", false, true);
-        } catch (err) { console.error(err); updateStatus("Processing Error", true, true); showError("Error: " + err.message); hideOverlay(); }
-      };
-      reader.onerror = () => { showError("Error reading file."); updateStatus("File Read Error", true, true); hideOverlay(); };
-      reader.readAsArrayBuffer(file);
-    });
-  }
-
-  function wireButtons() {
-    const retryBtn = qs('#retry-init-btn');
-    if (retryBtn) retryBtn.addEventListener('click', initSystemEngineWithRuntimes);
-    const copyBtn = qs('#export-copy-btn');
-    const htmlBtn = qs('#export-html-btn');
-    const pdfBtn = qs('#export-pdf-btn');
-    const csvBtn = qs('#export-csv-btn');
-    const nextStepBtn = qs('#export-nextstep-btn');
-    if (copyBtn) copyBtn.addEventListener('click', handleExportCopy);
-    if (htmlBtn) htmlBtn.addEventListener('click', handleExportHtml);
-    if (pdfBtn) pdfBtn.addEventListener('click', handleExportPdf);
-    if (csvBtn) csvBtn.addEventListener('click', handleExportCsv);
-    if (nextStepBtn) nextStepBtn.addEventListener('click', generateDPF);
-
-    // Help modal
-    const helpBtn = qs('#help-btn');
-    const helpModal = qs('#help-modal');
-    const helpModalClose = qs('#help-modal-close');
-    const helpModalClose2 = qs('#help-modal-close-2');
-    if (helpBtn) helpBtn.addEventListener('click', () => { if (helpModal) { helpModal.classList.remove('hidden'); helpModal.style.display = 'flex'; } });
-    if (helpModalClose) helpModalClose.addEventListener('click', () => { if (helpModal) { helpModal.classList.add('hidden'); helpModal.style.display = 'none'; } });
-    if (helpModalClose2) helpModalClose2.addEventListener('click', () => { if (helpModal) { helpModal.classList.add('hidden'); helpModal.style.display = 'none'; } });
-    if (helpModal) helpModal.addEventListener('click', (e) => { if (e.target.id === 'help-modal') { helpModal.classList.add('hidden'); helpModal.style.display = 'none'; } });
-
-    // Evidence modal
-    const evidenceModalClose = document.getElementById('evidence-modal-close');
-    const evidenceCloseBtn = document.getElementById('evidence-close-btn');
-    const evidenceModal = document.getElementById('evidence-modal');
-    if (evidenceModalClose) evidenceModalClose.addEventListener('click', window.closeEvidenceModal);
-    if (evidenceCloseBtn) evidenceCloseBtn.addEventListener('click', window.closeEvidenceModal);
-    if (evidenceModal) evidenceModal.addEventListener('click', (e) => { if (e.target.id === 'evidence-modal') window.closeEvidenceModal(); });
-
-    // Toggle switches
-    const strictToggle = qs('#strict-mode-toggle');
-    const reasonsToggle = qs('#show-reasons-toggle');
-    const exportLabel = qs('#export-mode-label');
-    
-    if (strictToggle) {
-      strictToggle.addEventListener('click', function() {
-        STRICT_MODE = !STRICT_MODE;
-        this.classList.toggle('active', STRICT_MODE);
-        if (exportLabel) exportLabel.textContent = STRICT_MODE ? 'Certified values only' : 'All extracted values';
-        if (lastExtractionRows) renderData(lastExtractionRows);
-      });
-    }
-    if (reasonsToggle) {
-      reasonsToggle.addEventListener('click', function() {
-        SHOW_BLANK_REASONS = !SHOW_BLANK_REASONS;
-        this.classList.toggle('active', SHOW_BLANK_REASONS);
-        if (lastExtractionRows) renderData(lastExtractionRows);
-      });
-    }
-  }
-
-  function init() { hideOverlay(); wireFileUpload(); wireButtons(); initSystemEngineWithRuntimes(); }
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
-  else init();
-})();
-</script>
-</body>
-</html>
-          <div class="results-overlay-subtext">⏪ Saving you hours of manual data entry</div>
-        </div>
-      </div>
-      <div class="mt-4 bg-[#1E293B] rounded-xl shadow-sm border border-[#334155] overflow-hidden">
-        <div class="px-6 py-3 bg-gradient-to-r from-[#0b5fff] to-[#0047cc] flex items-center justify-between">
-          <h3 class="text-sm font-semibold text-white">Export Options</h3>
-          <span id="export-mode-label" class="text-xs text-white/90">Certified values only</span>
-        </div>
-        <div class="px-6 py-4">
-          <div class="flex flex-wrap gap-3">
-            <button id="export-copy-btn" class="px-4 py-2 text-sm font-medium rounded-md border border-[#0b5fff] text-[#0b5fff] bg-transparent hover:bg-[#0b5fff] hover:text-white transition">📋 Copy</button>
-            <button id="export-html-btn" class="px-4 py-2 text-sm font-medium rounded-md border border-[#0b5fff] text-[#0b5fff] bg-transparent hover:bg-[#0b5fff] hover:text-white transition">🌐 HTML Table</button>
-            <button id="export-pdf-btn" class="px-4 py-2 text-sm font-medium rounded-md border border-[#0b5fff] text-[#0b5fff] bg-transparent hover:bg-[#0b5fff] hover:text-white transition">📄 PDF Report</button>
-            <button id="export-csv-btn" class="px-4 py-2 text-sm font-medium rounded-md border border-[#0b5fff] text-[#0b5fff] bg-transparent hover:bg-[#0b5fff] hover:text-white transition">📊 CSV file</button>
-            <button id="export-nextstep-btn" class="px-4 py-2 text-sm font-medium rounded-md bg-[#0b5fff] text-white hover:bg-[#0047cc] transition">📄 Generate Pre-Filled DPF</button>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div id="help-modal" class="modal-backdrop hidden">
-      <div class="modal-container">
-        <div class="modal-header"><h3>📖 How to Use Adopt(k)</h3><button id="help-modal-close" class="modal-close">&times;</button></div>
         <div class="modal-body">
-          <h4>🎯 What is Adopt(k)?</h4>
-          <p>Adopt(k) is an AI-powered tool that automatically extracts key plan design information from 401(k) adoption agreements. Upload a PDF and get structured data in seconds—no manual data entry required.</p>
-          <div class="highlight-box"><strong>🔒 Trust Contract:</strong> If Adopt(k) returns a value, it's certified correct. You don't need to double-check. Empty fields mean we couldn't verify with 100% certainty.</div>
-          <h4>📋 How to Extract Plan Data</h4>
-          <ul><li><strong>Step 1:</strong> Select your preferred LLM model (GPT-5.2 recommended)</li><li><strong>Step 2:</strong> Click the upload area and select your adoption agreement PDF</li><li><strong>Step 3:</strong> Wait for the extraction to complete</li><li><strong>Step 4:</strong> Review certified values and click "Source" to see evidence</li></ul>
-          <h4>✅ Understanding Status Badges</h4>
-          <div class="status-grid">
-            <div class="status-explain-card"><span class="status-badge certified">CERTIFIED</span><div class="status-text">Value verified directly from document text. Safe to use without review.</div></div>
-            <div class="status-explain-card"><span class="status-badge ambiguous">AMBIGUOUS</span><div class="status-text">Document uses unclear language like "may provide" or "at discretion".</div></div>
-            <div class="status-explain-card"><span class="status-badge conflict">CONFLICT</span><div class="status-text">Multiple conflicting provisions found. Requires manual review.</div></div>
-            <div class="status-explain-card"><span class="status-badge silent">SILENT</span><div class="status-text">Document doesn't address this provision at all.</div></div>
+          <p class="dpf-description">Generate a Document Preparation Form (DPF) pre-filled with the certified extracted values. Only verified data will be included—uncertain fields are left blank for manual review.</p>
+          
+          <div class="dpf-guarantee">
+            <div class="dpf-guarantee-icon">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+            </div>
+            <div>
+              <div class="dpf-guarantee-title">Quality Guarantee</div>
+              <div class="dpf-guarantee-text">Every value in the generated DPF has been certified from the source document. No guessing, no assumptions.</div>
+            </div>
           </div>
-          <h4>⚙️ Accuracy Settings</h4>
-          <ul><li><strong>Strict Mode:</strong> Only show certified values (recommended)</li><li><strong>Show Reasons:</strong> Display why fields are blank</li></ul>
-          <div class="tip-box"><strong>💡 Pro Tip:</strong> Click the "Source" button on any certified field to see the exact document text that supports the extracted value.</div>
+
+          <div class="dpf-categories">
+            <div class="dpf-category">
+              <div class="dpf-category-icon">🏢</div>
+              <div class="dpf-category-title">Company Info</div>
+              <div class="dpf-category-desc">Name, address, EIN, entity type</div>
+            </div>
+            <div class="dpf-category">
+              <div class="dpf-category-icon">📋</div>
+              <div class="dpf-category-title">Plan Details</div>
+              <div class="dpf-category-desc">Name, dates, plan number</div>
+            </div>
+            <div class="dpf-category">
+              <div class="dpf-category-icon">👥</div>
+              <div class="dpf-category-title">Eligibility</div>
+              <div class="dpf-category-desc">Service, age, entry dates</div>
+            </div>
+            <div class="dpf-category">
+              <div class="dpf-category-icon">💰</div>
+              <div class="dpf-category-title">Contributions</div>
+              <div class="dpf-category-desc">Match, safe harbor, vesting</div>
+            </div>
+          </div>
         </div>
-        <div class="modal-footer"><button id="help-modal-close-2" class="modal-btn-primary">Got it!</button></div>
-      </div>
-    </div>
-    <div id="evidence-modal" class="modal-backdrop hidden">
-      <div class="modal-container" style="max-width: 600px;">
-        <div class="modal-header" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);"><h3>📋 Source Evidence</h3><button id="evidence-modal-close" class="modal-close">&times;</button></div>
-        <div class="modal-body" id="evidence-body"></div>
-        <div class="modal-footer"><button id="evidence-close-btn" class="modal-btn-primary">Close</button></div>
+        <div class="modal-footer">
+          <button id="dpf-cancel-btn" class="modal-btn-secondary">Cancel</button>
+          <button id="dpf-generate-btn" class="modal-btn-primary">Generate DPF</button>
+        </div>
       </div>
     </div>
   </main>
 </div>
+
 <script>
 (function() {
   const EXTRACTOR_API_BASE = "https://docuwaivz-plan-extractor-gursnjup4q-uc.a.run.app";
@@ -913,48 +384,21 @@ Will a Recipient be entitled to request a Direct In-Plan Roth Rollover
       let script = document.querySelector('script[data-docuwaivz-pdfjs]');
       if (!script) { script = document.createElement('script'); script.src = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"; script.async = true; script.setAttribute('data-docuwaivz-pdfjs', '1'); document.head.appendChild(script); }
       script.addEventListener('load', () => { window.pdfjsLib ? resolve() : reject(new Error("PDF.js not available")); }, { once: true });
-      script.addEventListener('error', () => reject(new Error("PDF.js failed to load")), { once: true });
+      script.addEventListener('error', () => reject(new Error("PDF.js failed")), { once: true });
     });
   }
+  
   function loadPyodideRuntimeIfNeeded() {
     return new Promise((resolve, reject) => {
       if (window.loadPyodide) { resolve(); return; }
       let script = document.querySelector('script[data-docuwaivz-pyodide]');
       if (!script) { script = document.createElement('script'); script.src = "https://cdn.jsdelivr.net/pyodide/v0.25.0/full/pyodide.js"; script.async = true; script.setAttribute('data-docuwaivz-pyodide', '1'); document.head.appendChild(script); }
       script.addEventListener('load', () => { window.loadPyodide ? resolve() : reject(new Error("Pyodide not available")); }, { once: true });
-      script.addEventListener('error', () => reject(new Error("Pyodide failed to load")), { once: true });
+      script.addEventListener('error', () => reject(new Error("Pyodide failed")), { once: true });
     });
   }
 
-  const pythonCleaningScript = `
-import re
-DEFAULT_REPLACEMENTS = {"checkbox_selected": [("☑", "[X]"), ("🗹", "[X]"), ("[x]", "[X]"), ("[X]", "[X]")], "checkbox_unselected": [("☐", "[ ]"), ("◻", "[ ]"), ("▢", "[ ]")], "punctuation": [(""", '"'), (""", '"'), ("'", "'"), ("'", "'"), ("–", "-"), ("—", "-")], "whitespace": [("\\\\u00a0", " "), ("\\\\r\\\\n", "\\\\n"), ("\\\\r", "\\\\n")], "misc": [("\\\\ufeff", "")]}
-CONTROL_CHARS_RE = re.compile(r"[\\\\x01-\\\\x08\\\\x0b\\\\x0c\\\\x0e-\\\\x1f]")
-def build_replacements(profile=None):
-    prof = profile or DEFAULT_REPLACEMENTS
-    order = []
-    for key in ["checkbox_selected", "checkbox_unselected", "punctuation", "whitespace", "misc"]:
-        order.extend(prof.get(key, []))
-    return order
-REPLACEMENTS_CACHE = build_replacements()
-def replace_special_chars(text):
-    if not text: return text
-    for src, dst in REPLACEMENTS_CACHE: text = text.replace(src, dst)
-    return text
-def clean_extracted_text(text, collapse_internal_spaces=True, preserve_indent=False):
-    if not text: return text
-    text = replace_special_chars(text)
-    text = CONTROL_CHARS_RE.sub("", text)
-    lines = text.split("\\\\n")
-    cleaned_lines = []
-    for line in lines:
-        s = line.strip()
-        if collapse_internal_spaces: s = re.sub(r"[ \\\\t]{2,}", " ", s)
-        cleaned_lines.append(s)
-    text = "\\\\n".join(cleaned_lines)
-    text = re.sub(r'\\\\n{3,}', '\\\\n\\\\n', text)
-    return text
-`;
+  const pythonCleaningScript = "import re\ndef clean_extracted_text(text, collapse_internal_spaces=True, preserve_indent=False):\n    if not text: return text\n    text = text.replace(chr(13) + chr(10), chr(10)).replace(chr(13), chr(10))\n    lines = text.split(chr(10))\n    cleaned_lines = []\n    for line in lines:\n        s = line.strip()\n        if collapse_internal_spaces:\n            while '  ' in s:\n                s = s.replace('  ', ' ')\n        cleaned_lines.append(s)\n    text = chr(10).join(cleaned_lines)\n    while chr(10) + chr(10) + chr(10) in text:\n        text = text.replace(chr(10) + chr(10) + chr(10), chr(10) + chr(10))\n    return text";
 
   const displayOrderMD = `## Company Information
 Company Name
@@ -965,6 +409,7 @@ Company Telephone
 EIN
 Form of Business
 Entity Type
+
 ## Corporate Details
 Employer's Tax Year End
 Plan Year End
@@ -972,6 +417,7 @@ Related Employers
 Related Employers Detail
 Multiple Employer Plan
 Affiliated_Employers
+
 ## Plan Information
 Plan Name
 Original Effective Date
@@ -979,6 +425,7 @@ Restatement Effective Date
 Plan Number
 Type of Plan
 Plan Year
+
 ## Eligibility
 Eligible Employees
 Are Union Employees Excluded?
@@ -994,12 +441,14 @@ Entry Date
 Elapsed Time or Hours of Service
 Effective Date of Age/Service Requirement (Amnesty Date)
 Counting Predecessor Service
+
 ## Compensation
 Definition of Compensation
 Total Compensation
 Plan Compensation Exclusions
 Period for Determining Compensation
 Using Entry Date Compensation
+
 ## Contributions
 Employer Non-Elective/Profit Sharing Contribution
 Employer Non-Elective/Profit Sharing Contribution Formula
@@ -1022,6 +471,7 @@ Limit on Matching Contribution
 Period for Determining Matching Contributions
 Matching Contribution Allocation Conditions
 Exceptions to Matching Contribution Allocation Conditions
+
 ## Safe Harbor
 Safe Harbor 401(k) Plan
 Is This a QACA Plan?
@@ -1030,6 +480,7 @@ Safe Harbor Formula
 Period for Determining Safe Harbor Contribution
 Eligibility for Safe Harbor Contribution
 Safe Harbor Delayed Effective Date
+
 ## Vesting
 Normal Retirement Age
 Early Retirement Age
@@ -1039,6 +490,7 @@ Vesting Schedule
 Vesting Exclusions
 Vesting for QACA
 Immediate Vesting Upon Death, Disability, ERA
+
 ## Distributions
 In-Service Distributions at Age 59.5
 Sources Available for In-Service Distributions at Age 59.5
@@ -1047,6 +499,7 @@ Sources Available for Hardship Distributions
 Loans Allowed
 Number of Loans Allowed at a Time
 Loan Rate of Interest
+
 ## Administration
 Top Paid Group Applicable
 Owner/Trustee Name
@@ -1055,24 +508,34 @@ Will a Recipient be entitled to request a Direct In-Plan Roth Rollover
 `;
 
   function qs(sel) { return document.querySelector('#docuwaivz-app ' + sel); }
-  function showOverlay(message) { const o = qs('#results-loading-overlay'), m = qs('#results-overlay-text'); if (o) o.style.display = 'flex'; if (m && message) m.textContent = message; }
+  function showOverlay(msg) { const o = qs('#results-loading-overlay'); if (o) o.style.display = 'flex'; }
   function hideOverlay() { const o = qs('#results-loading-overlay'); if (o) o.style.display = 'none'; }
   function updateStatus(text, isError = false, hideLoader = false) {
     const st = qs('#status-text'), ld = qs('#py-loader');
     if (st) { st.innerText = text; st.style.color = isError ? '#FCA5A5' : (hideLoader ? '#6EE7B7' : 'white'); }
     if (ld) { if (hideLoader || isError) ld.classList.add('hidden'); else ld.classList.remove('hidden'); }
   }
-  function showError(message) { const e = qs('#error-box'), r = qs('#retry-init-btn'); if (e) { e.innerHTML = '<strong>Error:</strong> ' + escapeHtml(message); e.classList.remove('hidden'); } if (r && initializationInProgress) r.classList.remove('hidden'); }
-  function enableUpload() { const u = qs('#upload-label'), i = qs('#upload-icon'); if (u) { u.classList.remove('opacity-50', 'pointer-events-none'); u.classList.add('enabled'); } if (i) { i.classList.remove('text-[#64748B]'); i.classList.add('text-[#0b5fff]'); } }
-  function sanitizeStringForPython(s) { return s.replace(/\0/g, ''); }
-  function escapeHtml(unsafe) { if (unsafe === null || unsafe === undefined) return ''; return String(unsafe).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;"); }
+  function showError(msg) { const eb = qs('#error-box'), rb = qs('#retry-init-btn'); if (eb) { eb.innerHTML = '<strong>Error:</strong> ' + escapeHtml(msg); eb.classList.remove('hidden'); } if (rb && initializationInProgress) rb.classList.remove('hidden'); }
+  function enableUpload() { const ul = qs('#upload-label'), ui = qs('#upload-icon'); if (ul) { ul.classList.remove('opacity-50', 'pointer-events-none'); ul.classList.add('enabled'); } if (ui) { ui.classList.remove('text-[#64748B]'); ui.classList.add('text-[#0b5fff]'); } }
+  function escapeHtml(s) { if (s == null) return ''; return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;"); }
 
-  function parseDisplayOrder(markdown) { const lines = markdown.split('\n'), orderedFields = []; let currentGroup = null; lines.forEach(line => { line = line.trim(); if (!line) return; if (line.startsWith('##')) currentGroup = line.replace(/^#+\s*/, '').trim(); else if (currentGroup) orderedFields.push({ group: currentGroup, fieldName: line }); }); return orderedFields; }
-  function buildRowLookup(rows) { const lookup = {}; rows.forEach(r => { if (r && typeof r.label === 'string') lookup[r.label] = r; }); return lookup; }
+  function parseDisplayOrder(md) { const lines = md.split('\n'), fields = []; let grp = null; lines.forEach(l => { l = l.trim(); if (!l) return; if (l.startsWith('##')) grp = l.replace(/^#+\s*/, '').trim(); else if (grp) fields.push({ group: grp, fieldName: l }); }); return fields; }
+  function buildRowLookup(rows) { const lk = {}; rows.forEach(r => { if (r && typeof r.label === 'string') lk[r.label] = r; }); return lk; }
   function isCertified(status) { const st = (status || '').toUpperCase(); return st === 'CERTIFIED' || st === 'OK' || st === ''; }
   function getStatusClass(status) { const st = (status || '').toUpperCase(); if (st === 'CERTIFIED' || st === 'OK') return 'certified'; if (st === 'AMBIGUOUS') return 'ambiguous'; if (st === 'CONFLICT') return 'conflict'; if (st === 'SILENT' || st === 'NOT_FOUND') return 'silent'; return 'uncertain'; }
-  function computeCoverage(rows, displayOrder) { const rowLookup = buildRowLookup(rows); let certified = 0, review = 0, silent = 0; displayOrder.forEach(item => { const rowObj = rowLookup[item.fieldName], status = (rowObj?.status || '').toUpperCase(), value = rowObj?.value || ''; if (status === 'CERTIFIED' || status === 'OK' || (value && !status)) certified++; else if (status === 'SILENT' || status === 'NOT_FOUND' || !value) silent++; else review++; }); return { certified, review, silent, total: displayOrder.length }; }
-  function renderCoverage(rows) { const cb = qs('#coverage-bar'); if (!cb) return; const displayOrder = parseDisplayOrder(displayOrderMD), c = computeCoverage(rows, displayOrder); cb.innerHTML = '<div class="coverage-pill certified">✓ Certified: '+c.certified+'</div><div class="coverage-pill review">⚠ Needs Review: '+c.review+'</div><div class="coverage-pill silent">— Silent: '+c.silent+'</div>'; cb.classList.remove('hidden'); }
+  
+  function computeCoverage(rows, displayOrder) {
+    const lk = buildRowLookup(rows); let cert = 0, rev = 0, sil = 0;
+    displayOrder.forEach(item => { const r = lk[item.fieldName], st = (r?.status || '').toUpperCase(), v = r?.value || ''; if (st === 'CERTIFIED' || st === 'OK' || (v && !st)) cert++; else if (st === 'SILENT' || st === 'NOT_FOUND' || !v) sil++; else rev++; });
+    return { certified: cert, review: rev, silent: sil, total: displayOrder.length };
+  }
+  
+  function renderCoverage(rows) {
+    const bar = qs('#coverage-bar'); if (!bar) return;
+    const c = computeCoverage(rows, parseDisplayOrder(displayOrderMD));
+    bar.innerHTML = `<div class="coverage-pill certified">✓ Certified: ${c.certified}</div><div class="coverage-pill review">⚠ Needs Review: ${c.review}</div><div class="coverage-pill silent">— Silent: ${c.silent}</div>`;
+    bar.classList.remove('hidden');
+  }
 
   function buildHtmlTable(rows) {
     const displayOrder = parseDisplayOrder(displayOrderMD), rowLookup = buildRowLookup(rows);
@@ -1081,67 +544,143 @@ Will a Recipient be entitled to request a Direct In-Plan Roth Rollover
       const rowObj = rowLookup[item.fieldName], rawValue = rowObj?.value ?? '', status = rowObj?.status || '', reason = rowObj?.reason || '', evidence = Array.isArray(rowObj?.evidence) ? rowObj.evidence : [];
       const value = (typeof rawValue === 'string') ? rawValue.trim() : rawValue, certified = isCertified(status), statusClass = getStatusClass(status);
       const showValue = STRICT_MODE ? (certified && value) : !!value, valueExists = showValue && value !== null && value !== undefined && value !== '';
-      if (item.group !== currentGroup) { if (currentGroup !== null) html += '</tbody>'; currentGroup = item.group; html += '<tbody><tr class="section-header-row"><td colspan="2">'+escapeHtml(currentGroup)+'</td></tr>'; }
-      let statusBadge = ''; if (!certified && SHOW_BLANK_REASONS && status) { statusBadge = '<span class="status-badge '+statusClass+'">'+escapeHtml(status)+'</span>'; if (reason) statusBadge += '<span style="margin-left: 0.5rem; font-size: 0.75rem; color: #94A3B8;">'+escapeHtml(reason)+'</span>'; }
-      let sourceBtn = ''; if (certified && evidence.length > 0 && valueExists) { const evidenceData = JSON.stringify({ field: item.fieldName, evidence: evidence }); sourceBtn = '<button class="source-btn" onclick=\'window.showEvidence('+JSON.stringify(evidenceData)+')\'>Source</button>'; }
-      html += '<tr class="data-row"><td class="field-cell">'+escapeHtml(item.fieldName)+'</td><td class="value-cell '+(valueExists ? '' : 'empty-value')+'"><div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 0.75rem;"><div style="flex: 1; min-width: 0;">'+(valueExists ? escapeHtml(value) : '')+(!valueExists && statusBadge ? '<div style="margin-top: 0.25rem;">'+statusBadge+'</div>' : '')+'</div>'+(sourceBtn ? '<div style="flex-shrink: 0;">'+sourceBtn+'</div>' : '')+'</div></td></tr>';
+      if (item.group !== currentGroup) { if (currentGroup !== null) html += '</tbody>'; currentGroup = item.group; html += `<tbody><tr class="section-header-row"><td colspan="2">${escapeHtml(currentGroup)}</td></tr>`; }
+      let statusBadge = ''; if (!certified && SHOW_BLANK_REASONS && status) { statusBadge = `<span class="status-badge ${statusClass}">${escapeHtml(status)}</span>`; if (reason) statusBadge += `<span style="margin-left: 0.5rem; font-size: 0.75rem; color: #94A3B8;">${escapeHtml(reason)}</span>`; }
+      let sourceBtn = ''; if (certified && evidence.length > 0 && valueExists) { const evData = JSON.stringify({ field: item.fieldName, evidence: evidence }); sourceBtn = `<button class="source-btn" onclick='window.showEvidence(${JSON.stringify(evData)})'>Source</button>`; }
+      html += `<tr class="data-row"><td class="field-cell">${escapeHtml(item.fieldName)}</td><td class="value-cell ${valueExists ? '' : 'empty-value'}"><div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 0.75rem;"><div style="flex: 1; min-width: 0;">${valueExists ? escapeHtml(value) : ''}${!valueExists && statusBadge ? `<div style="margin-top: 0.25rem;">${statusBadge}</div>` : ''}</div>${sourceBtn ? `<div style="flex-shrink: 0;">${sourceBtn}</div>` : ''}</div></td></tr>`;
     });
     if (currentGroup !== null) html += '</tbody>'; html += '</table>'; return html;
   }
-  function renderData(rows) { const rt = qs('#results-table'); if (!rt) return; const ht = buildHtmlTable(rows); lastHtmlTableString = ht; lastExtractionRows = rows; rt.innerHTML = ht; renderCoverage(rows); }
+
+  function renderData(rows) { const rt = qs('#results-table'); if (!rt) return; lastHtmlTableString = buildHtmlTable(rows); lastExtractionRows = rows; rt.innerHTML = lastHtmlTableString; renderCoverage(rows); }
 
   window.showEvidence = function(dataStr) {
     try {
-      const data = typeof dataStr === 'string' ? JSON.parse(dataStr) : dataStr;
-      const modal = document.getElementById('evidence-modal'), body = document.getElementById('evidence-body');
-      if (!modal || !body) { console.error('Evidence modal elements not found'); return; }
-      const field = data.field || 'Field', evidence = Array.isArray(data.evidence) ? data.evidence : [];
-      body.innerHTML = '<div style="margin-bottom: 1rem;"><div style="font-size: 1.125rem; font-weight: 600; color: white;">'+escapeHtml(field)+'</div><div style="font-size: 0.875rem; color: #94A3B8;">Certified source excerpts from the document</div></div>'+evidence.map(ev => '<div class="evidence-card"><div class="evidence-meta">'+(ev.page ? 'Page '+escapeHtml(String(ev.page)) : '')+(ev.section ? ' • Section '+escapeHtml(String(ev.section)) : '')+'</div><div class="evidence-quote">"'+escapeHtml(ev.quote || '')+'"</div></div>').join('')+(evidence.length === 0 ? '<p style="color: #94A3B8;">No source evidence available.</p>' : '');
+      const data = typeof dataStr === 'string' ? JSON.parse(dataStr) : dataStr, modal = document.getElementById('evidence-modal'), body = document.getElementById('evidence-body');
+      if (!modal || !body) return; const field = data.field || 'Field', evidence = Array.isArray(data.evidence) ? data.evidence : [];
+      body.innerHTML = `<div style="margin-bottom: 1rem;"><div style="font-size: 1.125rem; font-weight: 600; color: white;">${escapeHtml(field)}</div><div style="font-size: 0.875rem; color: #94A3B8;">Certified source excerpts from the document</div></div>${evidence.map(ev => `<div class="evidence-card"><div class="evidence-meta">${ev.page ? `Page ${escapeHtml(String(ev.page))}` : ''}${ev.section ? ` • Section ${escapeHtml(String(ev.section))}` : ''}</div><div class="evidence-quote">"${escapeHtml(ev.quote || '')}"</div></div>`).join('')}${evidence.length === 0 ? '<p style="color: #94A3B8;">No source evidence available.</p>' : ''}`;
       modal.classList.remove('hidden'); modal.style.display = 'flex';
     } catch (e) { console.error('Failed to parse evidence:', e); }
   };
   window.closeEvidenceModal = function() { const m = document.getElementById('evidence-modal'); if (m) { m.classList.add('hidden'); m.style.display = 'none'; } };
 
   async function callExtractorBackend(cleanedText) {
-    const ms = qs('#llm-model'), model = ms ? ms.value : null;
+    const modelSelect = qs('#llm-model'), model = modelSelect ? modelSelect.value : null;
     const payload = { document_text: cleanedText, vendor_hint: "Principal 401(k) Nonstandardized Adoption Agreement", model: model, display_order_md: displayOrderMD, strict_mode: true, return_evidence: true };
-    const resp = await fetch(EXTRACTOR_API_BASE + '/extract-plan', { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
-    if (!resp.ok) { const text = await resp.text(); throw new Error('Extractor HTTP ' + resp.status + ': ' + text.slice(0, 200) + '...'); }
-    const data = await resp.json(); if (!data.rows || !Array.isArray(data.rows)) throw new Error("Extractor response missing rows[]."); console.log("Model used by backend:", data.model_used); return data.rows;
+    const resp = await fetch(`${EXTRACTOR_API_BASE}/extract-plan`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+    if (!resp.ok) { const text = await resp.text(); throw new Error(`Extractor HTTP ${resp.status}: ${text.slice(0, 200)}...`); }
+    const data = await resp.json(); if (!data.rows || !Array.isArray(data.rows)) throw new Error("Missing rows[]"); return data.rows;
   }
 
-  function ensureExtractionAvailable() { if (!lastExtractionRows || !Array.isArray(lastExtractionRows) || lastExtractionRows.length === 0) { alert("No extraction available. Run an extraction first."); return false; } return true; }
-  function downloadFile(filename, mimeType, content) { const blob = new Blob([content], { type: mimeType }), url = URL.createObjectURL(blob), a = document.createElement('a'); a.href = url; a.download = filename; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url); }
-  async function handleExportCopy() { if (!ensureExtractionAvailable()) return; try { await navigator.clipboard.writeText(lastHtmlTableString || buildHtmlTable(lastExtractionRows)); alert("HTML table copied to clipboard."); } catch (err) { alert("Copy failed."); } }
-  function handleExportHtml() { if (!ensureExtractionAvailable()) return; downloadFile("plan_extraction.html", "text/html;charset=utf-8", '<!DOCTYPE html><html><head><meta charset="utf-8"><title>Plan Extraction</title></head><body>'+(lastHtmlTableString || buildHtmlTable(lastExtractionRows))+'</body></html>'); }
-  function handleExportCsv() { if (!ensureExtractionAvailable()) return; const displayOrder = parseDisplayOrder(displayOrderMD), rowLookup = buildRowLookup(lastExtractionRows); let csv = 'Field Name,Value,Status\n'; displayOrder.forEach(item => { const rowObj = rowLookup[item.fieldName], rawValue = rowObj?.value ?? '', status = rowObj?.status || '', value = (typeof rawValue === 'string') ? rawValue.trim() : (rawValue ?? ''); csv += '"'+item.fieldName.replace(/"/g, '""')+'","'+String(value).replace(/"/g, '""')+'","'+String(status).replace(/"/g, '""')+'"\n'; }); downloadFile("plan_extraction.csv", "text/csv;charset=utf-8", csv); }
-  function handleExportPdf() { if (!ensureExtractionAvailable()) return; const displayOrder = parseDisplayOrder(displayOrderMD), rowLookup = buildRowLookup(lastExtractionRows); let pdfHtml = '<!DOCTYPE html><html><head><meta charset="utf-8"><title>Plan Extraction Report</title><style>body{font-family:"Segoe UI",sans-serif;font-size:11px;color:#1e293b;}table{width:100%;border-collapse:collapse;}th{background:#0b5fff;color:white;padding:10px;text-align:left;}td{padding:8px;border:1px solid #cbd5e1;}.section-header{background:#f1f5f9;color:#0b5fff;font-weight:700;border-left:4px solid #0b5fff;}</style></head><body><h1 style="color:#0b5fff;">Plan Extraction Report</h1><table><thead><tr><th>Field Name</th><th>Value</th></tr></thead><tbody>'; let currentGroup = null; displayOrder.forEach(item => { const rowObj = rowLookup[item.fieldName], rawValue = rowObj?.value ?? '', value = (typeof rawValue === 'string') ? rawValue.trim() : (rawValue ?? ''); if (item.group !== currentGroup) { currentGroup = item.group; pdfHtml += '<tr><td colspan="2" class="section-header">'+escapeHtml(currentGroup)+'</td></tr>'; } pdfHtml += '<tr><td>'+escapeHtml(item.fieldName)+'</td><td>'+escapeHtml(value)+'</td></tr>'; }); pdfHtml += '</tbody></table><p style="margin-top:20px;color:#64748b;font-size:10px;">Generated by Adopt(k) - Waivz.ai</p></body></html>'; const printWindow = window.open('', '_blank'); printWindow.document.write(pdfHtml); printWindow.document.close(); printWindow.focus(); setTimeout(() => printWindow.print(), 250); }
-  async function generateDPF() { if (!lastExtractionRows || lastExtractionRows.length === 0) { alert("No extraction data available. Please upload and process an adoption agreement PDF first."); return; } const companyRow = lastExtractionRows.find(r => r.label === "Company Name"), companyName = companyRow ? companyRow.value : "Plan"; const btn = qs('#export-nextstep-btn'), originalText = btn ? btn.innerHTML : ''; if (btn) { btn.innerHTML = "⏳ Generating DPF..."; btn.disabled = true; btn.style.opacity = "0.7"; } try { const response = await fetch(EXTRACTOR_API_BASE + '/fill-dpf', { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ rows: lastExtractionRows, company_name: companyName }) }); if (!response.ok) { const errorText = await response.text(); throw new Error(errorText || 'Server error: ' + response.status); } const blob = await response.blob(), safeCompany = companyName.replace(/[^a-zA-Z0-9\s\-_]/g, '').trim().replace(/\s+/g, '_').substring(0, 30), filename = 'DPF_'+safeCompany+'_'+new Date().toISOString().split('T')[0]+'.docx', url = URL.createObjectURL(blob), a = document.createElement('a'); a.href = url; a.download = filename; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url); alert('✅ DPF Generated Successfully!\n\nFilename: '+filename); } catch (error) { console.error("DPF generation failed:", error); alert('❌ Failed to generate DPF\n\n'+error.message); } finally { if (btn) { btn.innerHTML = originalText; btn.disabled = false; btn.style.opacity = "1"; } } }
+  function ensureExtractionAvailable() { if (!lastExtractionRows || lastExtractionRows.length === 0) { alert("No extraction available. Run an extraction first."); return false; } return true; }
+  function downloadFile(name, type, content) { const blob = new Blob([content], { type }), url = URL.createObjectURL(blob), a = document.createElement('a'); a.href = url; a.download = name; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url); }
+  async function handleExportCopy() { if (!ensureExtractionAvailable()) return; try { await navigator.clipboard.writeText(lastHtmlTableString || buildHtmlTable(lastExtractionRows)); alert("Copied!"); } catch (e) { alert("Copy failed"); } }
+  function handleExportHtml() { if (!ensureExtractionAvailable()) return; downloadFile("plan_extraction.html", "text/html;charset=utf-8", `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Plan Extraction</title></head><body>${lastHtmlTableString || buildHtmlTable(lastExtractionRows)}</body></html>`); }
+  function handleExportCsv() { if (!ensureExtractionAvailable()) return; const displayOrder = parseDisplayOrder(displayOrderMD), rowLookup = buildRowLookup(lastExtractionRows); let csv = 'Field Name,Value,Status\n'; displayOrder.forEach(item => { const r = rowLookup[item.fieldName], v = r?.value ?? '', s = r?.status || ''; csv += `"${item.fieldName.replace(/"/g, '""')}","${String(v).replace(/"/g, '""')}","${String(s).replace(/"/g, '""')}"\n`; }); downloadFile("plan_extraction.csv", "text/csv;charset=utf-8", csv); }
+  function handleExportPdf() { if (!ensureExtractionAvailable()) return; const displayOrder = parseDisplayOrder(displayOrderMD), rowLookup = buildRowLookup(lastExtractionRows); let html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Plan Extraction Report</title><style>body{font-family:sans-serif;font-size:11px;}table{width:100%;border-collapse:collapse;}th{background:#0b5fff;color:white;padding:10px;text-align:left;}td{padding:8px;border:1px solid #cbd5e1;}.section{background:#f1f5f9;color:#0b5fff;font-weight:700;border-left:4px solid #0b5fff;}</style></head><body><h1 style="color:#0b5fff;">Plan Extraction Report</h1><table><thead><tr><th>Field</th><th>Value</th></tr></thead><tbody>`; let grp = null; displayOrder.forEach(item => { const r = rowLookup[item.fieldName], v = r?.value ?? ''; if (item.group !== grp) { grp = item.group; html += `<tr><td colspan="2" class="section">${escapeHtml(grp)}</td></tr>`; } html += `<tr><td>${escapeHtml(item.fieldName)}</td><td>${escapeHtml(v)}</td></tr>`; }); html += `</tbody></table><p style="margin-top:20px;color:#64748b;font-size:10px;">Generated by Adopt(k) - Waivz.ai</p></body></html>`; const w = window.open('', '_blank'); w.document.write(html); w.document.close(); w.focus(); setTimeout(() => w.print(), 250); }
 
-  async function initSystemEngineWithRuntimes() { try { await Promise.all([loadPdfJsIfNeeded(), loadPyodideRuntimeIfNeeded()]); } catch (err) { console.error(err); updateStatus("Runtime load failed", true, true); showError("Engine failed to load required runtimes: " + err.message); return; } await initSystemEngine(); }
-  async function initSystemEngine() { if (initializationInProgress) return; initializationInProgress = true; const errorBox = qs('#error-box'), retryBtn = qs('#retry-init-btn'), loader = qs('#py-loader'); if (errorBox) errorBox.classList.add('hidden'); if (retryBtn) retryBtn.classList.add('hidden'); if (loader) loader.classList.remove('hidden'); updateStatus("Step 1/3: Initializing PDF Reader..."); if (!window.pdfjsLib || typeof window.pdfjsLib.getDocument !== 'function') { updateStatus("Initialization Failed (Step 1)", true, true); showError("Step 1 Failed: PDF.js library failed to load."); return; } pdfjsLibInstance = window.pdfjsLib; updateStatus("Step 2/3: Loading Python Cleaning Utility..."); try { pyodideInstance = await window.loadPyodide({ indexURL: "https://cdn.jsdelivr.net/pyodide/v0.25.0/full/" }); await pyodideInstance.runPythonAsync("import sys"); } catch (err) { console.error(err); updateStatus("Initialization Failed (Step 2)", true, true); showError('Step 2 Failed: ' + err.message); return; } updateStatus("Step 3/3: Loading Cleaning Scripts..."); try { await pyodideInstance.runPythonAsync(sanitizeStringForPython(pythonCleaningScript)); } catch (err) { console.error(err); updateStatus("Initialization Failed (Step 3)", true, true); showError("Step 3 Failed: Error executing the cleaning script."); return; } updateStatus("Engine Ready", false, true); enableUpload(); initializationInProgress = false; }
+  function openDPFModal() { const m = document.getElementById('dpf-modal'); if (m) { m.classList.remove('hidden'); m.style.display = 'flex'; } }
+  function closeDPFModal() { const m = document.getElementById('dpf-modal'); if (m) { m.classList.add('hidden'); m.style.display = 'none'; } }
+  async function generateDPF() {
+    if (!lastExtractionRows || lastExtractionRows.length === 0) { alert("No extraction data available. Please upload and process an adoption agreement PDF first."); return; }
+    const companyRow = lastExtractionRows.find(r => r.label === "Company Name"), companyName = companyRow ? companyRow.value : "Plan";
+    const btn = document.getElementById('dpf-generate-btn'), originalText = btn ? btn.innerHTML : '';
+    if (btn) { btn.innerHTML = "⏳ Generating..."; btn.disabled = true; }
+    try {
+      const response = await fetch(`${EXTRACTOR_API_BASE}/fill-dpf`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ rows: lastExtractionRows, company_name: companyName }) });
+      if (!response.ok) { const errorText = await response.text(); throw new Error(errorText || `Server error: ${response.status}`); }
+      const blob = await response.blob(), safeCompany = companyName.replace(/[^a-zA-Z0-9\s\-_]/g, '').trim().replace(/\s+/g, '_').substring(0, 30);
+      const filename = `DPF_${safeCompany}_${new Date().toISOString().split('T')[0]}.docx`, url = URL.createObjectURL(blob), a = document.createElement('a');
+      a.href = url; a.download = filename; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+      closeDPFModal(); alert(`✅ DPF Generated!\n\nFilename: ${filename}`);
+    } catch (error) { console.error("DPF generation failed:", error); alert(`❌ Failed to generate DPF\n\n${error.message}`); }
+    finally { if (btn) { btn.innerHTML = originalText; btn.disabled = false; } }
+  }
 
-  function wireFileUpload() { const fileInput = qs('#file-upload'); if (!fileInput) return; fileInput.addEventListener('change', async (event) => { const file = event.target.files[0]; if (!file || file.type !== 'application/pdf') { alert("Please upload a valid PDF file."); return; } const fileInfo = qs('#file-info'), errorBox = qs('#error-box'); if (!pyodideInstance || !pdfjsLibInstance) { showError("Engine is not ready."); return; } if (errorBox) errorBox.classList.add('hidden'); updateStatus("Preparing Upload...", false, false); showOverlay("Processing selected PDF..."); if (fileInfo) { fileInfo.textContent = 'File: '+file.name+' | Size: '+(file.size / 1024).toFixed(1)+' KB'; fileInfo.classList.remove('hidden'); } const reader = new FileReader(); reader.onload = async (e) => { try { const typedarray = new Uint8Array(e.target.result); updateStatus("Extracting PDF Text...", false, false); showOverlay("Extracting text from PDF..."); const loadingTask = pdfjsLibInstance.getDocument({ data: typedarray }), pdf = await loadingTask.promise; let fullText = ""; for (let i = 1; i <= pdf.numPages; i++) { if (i % 20 === 0 || i === 1) updateStatus('Extracting Text (Page '+i+'/'+pdf.numPages+')...', false, false); const page = await pdf.getPage(i), textContent = await page.getTextContent(); fullText += textContent.items.map(item => item.str).join(' ') + "\n"; } updateStatus("Normalizing Text...", false, false); showOverlay("Normalizing extracted text..."); const cleanFunc = pyodideInstance.globals.get('clean_extracted_text'), cleanedText = cleanFunc(sanitizeStringForPython(fullText), true, false); updateStatus("Sending data to extractor…", false, false); showOverlay("Analyzing adoption agreement..."); const rows = await callExtractorBackend(cleanedText); renderData(rows); hideOverlay(); updateStatus("Analysis Complete", false, true); } catch (err) { console.error(err); updateStatus("Processing Error", true, true); showError("Error: " + err.message); hideOverlay(); } }; reader.onerror = () => { showError("Error reading file."); updateStatus("File Read Error", true, true); hideOverlay(); }; reader.readAsArrayBuffer(file); }); }
+  async function initSystemEngineWithRuntimes() { try { await Promise.all([loadPdfJsIfNeeded(), loadPyodideRuntimeIfNeeded()]); } catch (err) { console.error(err); updateStatus("Runtime load failed", true, true); showError("Engine failed: " + err.message); return; } await initSystemEngine(); }
+  async function initSystemEngine() {
+    if (initializationInProgress) return; initializationInProgress = true;
+    const eb = qs('#error-box'), rb = qs('#retry-init-btn'), ld = qs('#py-loader');
+    if (eb) eb.classList.add('hidden'); if (rb) rb.classList.add('hidden'); if (ld) ld.classList.remove('hidden');
+    updateStatus("Step 1/3: Initializing PDF Reader...");
+    if (!window.pdfjsLib || typeof window.pdfjsLib.getDocument !== 'function') { updateStatus("Init Failed (Step 1)", true, true); showError("PDF.js failed"); return; }
+    pdfjsLibInstance = window.pdfjsLib;
+    updateStatus("Step 2/3: Loading Python Utility...");
+    try { pyodideInstance = await window.loadPyodide({ indexURL: "https://cdn.jsdelivr.net/pyodide/v0.25.0/full/" }); await pyodideInstance.runPythonAsync("import sys"); } catch (err) { console.error(err); updateStatus("Init Failed (Step 2)", true, true); showError(`Pyodide failed: ${err.message}`); return; }
+    updateStatus("Step 3/3: Loading Cleaning Scripts...");
+    try { await pyodideInstance.runPythonAsync(pythonCleaningScript); } catch (err) { console.error(err); updateStatus("Init Failed (Step 3)", true, true); showError("Cleaning script failed: " + err.message); return; }
+    updateStatus("Engine Ready", false, true); enableUpload(); initializationInProgress = false;
+  }
+
+  function wireFileUpload() {
+    const fi = qs('#file-upload'); if (!fi) return;
+    fi.addEventListener('change', async (event) => {
+      const file = event.target.files[0]; if (!file || file.type !== 'application/pdf') { alert("Please upload a valid PDF file."); return; }
+      const fileInfo = qs('#file-info'), errorBox = qs('#error-box');
+      if (!pyodideInstance || !pdfjsLibInstance) { showError("Engine not ready."); return; }
+      if (errorBox) errorBox.classList.add('hidden');
+      updateStatus("Preparing Upload...", false, false); showOverlay("Processing PDF...");
+      if (fileInfo) { fileInfo.textContent = `File: ${file.name} | Size: ${(file.size / 1024).toFixed(1)} KB`; fileInfo.classList.remove('hidden'); }
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        try {
+          const typedarray = new Uint8Array(e.target.result);
+          updateStatus("Extracting PDF Text...", false, false);
+          const loadingTask = pdfjsLibInstance.getDocument({ data: typedarray }), pdf = await loadingTask.promise;
+          let fullText = "";
+          for (let i = 1; i <= pdf.numPages; i++) { if (i % 20 === 0 || i === 1) updateStatus(`Extracting (Page ${i}/${pdf.numPages})...`, false, false); const page = await pdf.getPage(i), tc = await page.getTextContent(); fullText += tc.items.map(item => item.str).join(' ') + "\n"; }
+          updateStatus("Normalizing Text...", false, false);
+          const cleanFunc = pyodideInstance.globals.get('clean_extracted_text'), cleanedText = cleanFunc(fullText.replace(/\0/g, ''), true, false);
+          updateStatus("Sending to extractor…", false, false);
+          const rows = await callExtractorBackend(cleanedText);
+          renderData(rows); hideOverlay(); updateStatus("Analysis Complete", false, true);
+        } catch (err) { console.error(err); updateStatus("Processing Error", true, true); showError("Error: " + err.message); hideOverlay(); }
+      };
+      reader.onerror = () => { showError("Error reading file."); updateStatus("File Read Error", true, true); hideOverlay(); };
+      reader.readAsArrayBuffer(file);
+    });
+  }
 
   function wireButtons() {
     const retryBtn = qs('#retry-init-btn'); if (retryBtn) retryBtn.addEventListener('click', initSystemEngineWithRuntimes);
     const copyBtn = qs('#export-copy-btn'), htmlBtn = qs('#export-html-btn'), pdfBtn = qs('#export-pdf-btn'), csvBtn = qs('#export-csv-btn'), nextStepBtn = qs('#export-nextstep-btn');
-    if (copyBtn) copyBtn.addEventListener('click', handleExportCopy); if (htmlBtn) htmlBtn.addEventListener('click', handleExportHtml); if (pdfBtn) pdfBtn.addEventListener('click', handleExportPdf); if (csvBtn) csvBtn.addEventListener('click', handleExportCsv); if (nextStepBtn) nextStepBtn.addEventListener('click', generateDPF);
-    const helpBtn = qs('#help-btn'), helpModal = qs('#help-modal'), helpModalClose = qs('#help-modal-close'), helpModalClose2 = qs('#help-modal-close-2');
-    if (helpBtn) helpBtn.addEventListener('click', () => { if (helpModal) { helpModal.classList.remove('hidden'); helpModal.style.display = 'flex'; } });
+    if (copyBtn) copyBtn.addEventListener('click', handleExportCopy);
+    if (htmlBtn) htmlBtn.addEventListener('click', handleExportHtml);
+    if (pdfBtn) pdfBtn.addEventListener('click', handleExportPdf);
+    if (csvBtn) csvBtn.addEventListener('click', handleExportCsv);
+    if (nextStepBtn) nextStepBtn.addEventListener('click', openDPFModal);
+
+    // How to Use button and modal
+    const howToUseBtn = qs('#how-to-use-btn'), helpModal = document.getElementById('help-modal'), helpModalClose = document.getElementById('help-modal-close'), helpModalClose2 = document.getElementById('help-modal-close-2');
+    if (howToUseBtn) howToUseBtn.addEventListener('click', () => { if (helpModal) { helpModal.classList.remove('hidden'); helpModal.style.display = 'flex'; } });
     if (helpModalClose) helpModalClose.addEventListener('click', () => { if (helpModal) { helpModal.classList.add('hidden'); helpModal.style.display = 'none'; } });
     if (helpModalClose2) helpModalClose2.addEventListener('click', () => { if (helpModal) { helpModal.classList.add('hidden'); helpModal.style.display = 'none'; } });
     if (helpModal) helpModal.addEventListener('click', (e) => { if (e.target.id === 'help-modal') { helpModal.classList.add('hidden'); helpModal.style.display = 'none'; } });
+
+    // What's New button and modal
+    const whatsNewBtn = qs('#whats-new-btn'), whatsNewModal = document.getElementById('whats-new-modal'), whatsNewModalClose = document.getElementById('whats-new-modal-close'), whatsNewCloseBtn = document.getElementById('whats-new-close-btn');
+    if (whatsNewBtn) whatsNewBtn.addEventListener('click', () => { if (whatsNewModal) { whatsNewModal.classList.remove('hidden'); whatsNewModal.style.display = 'flex'; } });
+    if (whatsNewModalClose) whatsNewModalClose.addEventListener('click', () => { if (whatsNewModal) { whatsNewModal.classList.add('hidden'); whatsNewModal.style.display = 'none'; } });
+    if (whatsNewCloseBtn) whatsNewCloseBtn.addEventListener('click', () => { if (whatsNewModal) { whatsNewModal.classList.add('hidden'); whatsNewModal.style.display = 'none'; } });
+    if (whatsNewModal) whatsNewModal.addEventListener('click', (e) => { if (e.target.id === 'whats-new-modal') { whatsNewModal.classList.add('hidden'); whatsNewModal.style.display = 'none'; } });
+
+    // Evidence modal
     const evidenceModalClose = document.getElementById('evidence-modal-close'), evidenceCloseBtn = document.getElementById('evidence-close-btn'), evidenceModal = document.getElementById('evidence-modal');
-    if (evidenceModalClose) evidenceModalClose.addEventListener('click', window.closeEvidenceModal); if (evidenceCloseBtn) evidenceCloseBtn.addEventListener('click', window.closeEvidenceModal);
+    if (evidenceModalClose) evidenceModalClose.addEventListener('click', window.closeEvidenceModal);
+    if (evidenceCloseBtn) evidenceCloseBtn.addEventListener('click', window.closeEvidenceModal);
     if (evidenceModal) evidenceModal.addEventListener('click', (e) => { if (e.target.id === 'evidence-modal') window.closeEvidenceModal(); });
-    const strictToggle = qs('#strict-mode-toggle'), reasonsToggle = qs('#show-reasons-toggle'), exportLabel = qs('#export-mode-label');
-    if (strictToggle) strictToggle.addEventListener('click', function() { STRICT_MODE = !STRICT_MODE; this.classList.toggle('active', STRICT_MODE); if (exportLabel) exportLabel.textContent = STRICT_MODE ? 'Certified values only' : 'All extracted values'; if (lastExtractionRows) renderData(lastExtractionRows); });
-    if (reasonsToggle) reasonsToggle.addEventListener('click', function() { SHOW_BLANK_REASONS = !SHOW_BLANK_REASONS; this.classList.toggle('active', SHOW_BLANK_REASONS); if (lastExtractionRows) renderData(lastExtractionRows); });
+
+    // DPF modal
+    const dpfModalClose = document.getElementById('dpf-modal-close'), dpfCancelBtn = document.getElementById('dpf-cancel-btn'), dpfGenerateBtn = document.getElementById('dpf-generate-btn'), dpfModal = document.getElementById('dpf-modal');
+    if (dpfModalClose) dpfModalClose.addEventListener('click', closeDPFModal);
+    if (dpfCancelBtn) dpfCancelBtn.addEventListener('click', closeDPFModal);
+    if (dpfGenerateBtn) dpfGenerateBtn.addEventListener('click', generateDPF);
+    if (dpfModal) dpfModal.addEventListener('click', (e) => { if (e.target.id === 'dpf-modal') closeDPFModal(); });
   }
 
   function init() { hideOverlay(); wireFileUpload(); wireButtons(); initSystemEngineWithRuntimes(); }
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+  else init();
 })();
 </script>
 </body>
