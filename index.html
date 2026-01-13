@@ -6,311 +6,88 @@
   <title>Adopt(k) - Plan Extraction</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    /* Base styles */
     body { margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, sans-serif; }
-    
-    /* Dark theme */
-    .upload-area-dark {
-      background: #1E293B;
-      border: 2px dashed #334155;
-      transition: all 0.3s;
-    }
-    .upload-area-dark:hover, .upload-area-dark.enabled:hover {
-      border-color: #0b5fff;
-      background: rgba(11, 95, 255, 0.1);
-    }
-    .upload-area-dark.enabled {
-      border-color: #0b5fff;
-      opacity: 1;
-    }
-    
-    .status-section-dark {
-      background: #1E293B;
-      border: 1px solid #334155;
-      border-radius: 0.5rem;
-      padding: 0.75rem 1rem;
-    }
-    
-    .loader-dark {
-      width: 16px; height: 16px;
-      border: 2px solid #334155;
-      border-top-color: #0b5fff;
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-    }
+    .upload-area-dark { background: #1E293B; border: 2px dashed #334155; transition: all 0.3s; }
+    .upload-area-dark:hover, .upload-area-dark.enabled:hover { border-color: #0b5fff; background: rgba(11, 95, 255, 0.1); }
+    .upload-area-dark.enabled { border-color: #0b5fff; opacity: 1; }
+    .status-section-dark { background: #1E293B; border: 1px solid #334155; border-radius: 0.5rem; padding: 0.75rem 1rem; }
+    .loader-dark { width: 16px; height: 16px; border: 2px solid #334155; border-top-color: #0b5fff; border-radius: 50%; animation: spin 1s linear infinite; }
     @keyframes spin { to { transform: rotate(360deg); } }
-    
-    .help-btn-dark {
-      display: flex; align-items: center; gap: 0.375rem;
-      padding: 0.375rem 0.75rem;
-      font-size: 0.75rem; font-weight: 500;
-      color: #94A3B8;
-      background: #1E293B;
-      border: 1px solid #334155;
-      border-radius: 0.375rem;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
+    .help-btn-dark { display: flex; align-items: center; gap: 0.375rem; padding: 0.375rem 0.75rem; font-size: 0.75rem; font-weight: 500; color: #94A3B8; background: #1E293B; border: 1px solid #334155; border-radius: 0.375rem; cursor: pointer; transition: all 0.2s; }
     .help-btn-dark:hover { color: white; border-color: #0b5fff; }
-    
-    /* Results table */
-    .results-table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 0.875rem;
-    }
-    .results-table thead th {
-      background: #0F172A;
-      color: #94A3B8;
-      font-weight: 600;
-      text-transform: uppercase;
-      font-size: 0.75rem;
-      letter-spacing: 0.05em;
-      padding: 0.75rem 1rem;
-      text-align: left;
-      border-bottom: 1px solid #334155;
-    }
-    .results-table .section-header-row td {
-      background: linear-gradient(90deg, rgba(11, 95, 255, 0.15) 0%, rgba(11, 95, 255, 0.05) 100%);
-      color: #0b5fff;
-      font-weight: 700;
-      font-size: 0.75rem;
-      text-transform: uppercase;
-      letter-spacing: 0.1em;
-      padding: 0.625rem 1rem;
-      border-left: 3px solid #0b5fff;
-    }
-    .results-table .data-row td {
-      padding: 0.625rem 1rem;
-      border-bottom: 1px solid #1E293B;
-      color: #E2E8F0;
-    }
+    .toggle-switch { position: relative; width: 44px; height: 24px; background: #334155; border-radius: 9999px; cursor: pointer; transition: background 0.2s; flex-shrink: 0; }
+    .toggle-switch.active { background: #0b5fff; }
+    .toggle-switch::after { content: ''; position: absolute; top: 2px; left: 2px; width: 20px; height: 20px; background: white; border-radius: 50%; transition: transform 0.2s; }
+    .toggle-switch.active::after { transform: translateX(20px); }
+    .results-table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
+    .results-table thead th { background: #0F172A; color: #94A3B8; font-weight: 600; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.05em; padding: 0.75rem 1rem; text-align: left; border-bottom: 1px solid #334155; }
+    .results-table .section-header-row td { background: linear-gradient(90deg, rgba(11, 95, 255, 0.15) 0%, rgba(11, 95, 255, 0.05) 100%); color: #0b5fff; font-weight: 700; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; padding: 0.625rem 1rem; border-left: 3px solid #0b5fff; }
+    .results-table .data-row td { padding: 0.625rem 1rem; border-bottom: 1px solid #1E293B; color: #E2E8F0; }
     .results-table .data-row:hover td { background: rgba(30, 41, 59, 0.5); }
-    .results-table .field-cell {
-      color: #94A3B8;
-      font-weight: 500;
-      width: 35%;
-    }
+    .results-table .field-cell { color: #94A3B8; font-weight: 500; width: 35%; }
     .results-table .value-cell { color: #F1F5F9; }
     .results-table .value-cell.empty-value { color: #475569; font-style: italic; }
-    
-    /* Coverage Bar */
     .coverage-bar { display: flex; gap: 1rem; flex-wrap: wrap; }
-    .coverage-pill {
-      padding: 0.375rem 0.75rem;
-      border-radius: 9999px;
-      font-size: 0.75rem;
-      font-weight: 600;
-    }
-    .coverage-pill.certified {
-      background: rgba(16, 185, 129, 0.2);
-      color: #10b981;
-      border: 1px solid rgba(16, 185, 129, 0.3);
-    }
-    .coverage-pill.review {
-      background: rgba(245, 158, 11, 0.2);
-      color: #f59e0b;
-      border: 1px solid rgba(245, 158, 11, 0.3);
-    }
-    .coverage-pill.silent {
-      background: rgba(148, 163, 184, 0.2);
-      color: #94a3b8;
-      border: 1px solid rgba(148, 163, 184, 0.3);
-    }
-    
-    /* Status Badges */
-    .status-badge {
-      display: inline-block;
-      padding: 0.125rem 0.5rem;
-      border-radius: 0.25rem;
-      font-size: 0.625rem;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-    }
+    .coverage-pill { padding: 0.375rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; }
+    .coverage-pill.certified { background: rgba(16, 185, 129, 0.2); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); }
+    .coverage-pill.review { background: rgba(245, 158, 11, 0.2); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3); }
+    .coverage-pill.silent { background: rgba(148, 163, 184, 0.2); color: #94a3b8; border: 1px solid rgba(148, 163, 184, 0.3); }
+    .status-badge { display: inline-block; padding: 0.125rem 0.5rem; border-radius: 0.25rem; font-size: 0.625rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
     .status-badge.certified { background: rgba(16, 185, 129, 0.2); color: #10b981; }
     .status-badge.silent { background: rgba(148, 163, 184, 0.2); color: #94a3b8; }
-    .status-badge.ambiguous, .status-badge.uncertain, .status-badge.conflict {
-      background: rgba(245, 158, 11, 0.2); color: #f59e0b;
-    }
-    
-    /* Source Button */
-    .source-btn {
-      padding: 0.25rem 0.5rem;
-      font-size: 0.625rem;
-      font-weight: 600;
-      color: #10b981;
-      background: rgba(16, 185, 129, 0.1);
-      border: 1px solid rgba(16, 185, 129, 0.3);
-      border-radius: 0.25rem;
-      cursor: pointer;
-      transition: all 0.2s;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-    }
+    .status-badge.ambiguous, .status-badge.uncertain, .status-badge.conflict { background: rgba(245, 158, 11, 0.2); color: #f59e0b; }
+    .source-btn { padding: 0.25rem 0.5rem; font-size: 0.625rem; font-weight: 600; color: #10b981; background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 0.25rem; cursor: pointer; transition: all 0.2s; text-transform: uppercase; letter-spacing: 0.05em; }
     .source-btn:hover { background: rgba(16, 185, 129, 0.2); border-color: #10b981; }
-    
-    /* Evidence Card */
-    .evidence-card {
-      background: rgba(30, 41, 59, 0.5);
-      border: 1px solid #334155;
-      border-left: 3px solid #10b981;
-      border-radius: 0.5rem;
-      padding: 1rem;
-      margin-bottom: 0.75rem;
-    }
+    .evidence-card { background: rgba(30, 41, 59, 0.5); border: 1px solid #334155; border-left: 3px solid #10b981; border-radius: 0.5rem; padding: 1rem; margin-bottom: 0.75rem; }
     .evidence-meta { font-size: 0.75rem; color: #94a3b8; margin-bottom: 0.5rem; }
     .evidence-quote { color: #e2e8f0; font-style: italic; line-height: 1.5; }
-    
-    /* Loading overlay */
-    .results-overlay {
-      position: absolute; inset: 0;
-      background: rgba(15, 23, 42, 0.95);
-      display: flex; flex-direction: column;
-      align-items: center; justify-content: center;
-      z-index: 10;
-    }
+    .results-overlay { position: absolute; inset: 0; background: rgba(15, 23, 42, 0.95); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 10; }
     .results-overlay.hidden { display: none; }
     .results-overlay-text { color: white; font-size: 1.125rem; font-weight: 600; margin-top: 1.5rem; }
     .results-overlay-subtext { color: #94A3B8; font-size: 0.875rem; margin-top: 0.5rem; }
-    
-    /* Clock spinner */
-    .clock-spinner {
-      width: 60px; height: 60px;
-      border-radius: 50%;
-      background: #1E293B;
-      border: 3px solid #0b5fff;
-      position: relative;
-    }
-    .clock-hand-hour, .clock-hand-minute {
-      position: absolute;
-      background: #0b5fff;
-      transform-origin: bottom center;
-      left: 50%;
-      bottom: 50%;
-      border-radius: 2px;
-    }
-    .clock-hand-hour { width: 3px; height: 15px; margin-left: -1.5px; animation: spin 4s linear infinite reverse; }
-    .clock-hand-minute { width: 2px; height: 22px; margin-left: -1px; animation: spin 1s linear infinite reverse; }
-    
-    /* Modal styles */
-    .modal-backdrop {
-      position: fixed; inset: 0;
-      background: rgba(0, 0, 0, 0.75);
-      display: flex; align-items: center; justify-content: center;
-      z-index: 50;
-      padding: 1rem;
-    }
+    .clock-spinner { width: 80px; height: 80px; border-radius: 50%; background: #1E293B; border: 3px solid #334155; position: relative; }
+    .clock-hand-hour, .clock-hand-minute { position: absolute; background: #0b5fff; border-radius: 2px; transform-origin: bottom center; left: 50%; }
+    .clock-hand-hour { width: 4px; height: 20px; bottom: 50%; margin-left: -2px; animation: spin-reverse 4s linear infinite; }
+    .clock-hand-minute { width: 3px; height: 28px; bottom: 50%; margin-left: -1.5px; animation: spin-reverse 1s linear infinite; }
+    @keyframes spin-reverse { from { transform: rotate(360deg); } to { transform: rotate(0deg); } }
+    .modal-backdrop { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.75); display: flex; align-items: center; justify-content: center; z-index: 50; padding: 1rem; }
     .modal-backdrop.hidden { display: none !important; }
-    .modal-container {
-      background: #1E293B;
-      border: 1px solid #334155;
-      border-radius: 0.75rem;
-      max-width: 500px;
-      width: 100%;
-      max-height: 90vh;
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-    }
-    .modal-header {
-      background: linear-gradient(135deg, #0b5fff 0%, #0047cc 100%);
-      padding: 1rem 1.5rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
+    .modal-container { background: #1E293B; border: 1px solid #334155; border-radius: 0.75rem; max-width: 700px; width: 100%; max-height: 85vh; overflow: hidden; display: flex; flex-direction: column; }
+    .modal-header { background: linear-gradient(135deg, #0b5fff 0%, #0047cc 100%); padding: 1rem 1.5rem; display: flex; align-items: center; justify-content: space-between; }
     .modal-header h3 { color: white; font-size: 1.125rem; font-weight: 600; margin: 0; }
-    .modal-close {
-      background: rgba(255,255,255,0.2);
-      border: none;
-      color: white;
-      width: 28px; height: 28px;
-      border-radius: 50%;
-      cursor: pointer;
-      font-size: 1.25rem;
-      line-height: 1;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
+    .modal-close { background: rgba(255,255,255,0.2); border: none; color: white; width: 28px; height: 28px; border-radius: 50%; cursor: pointer; font-size: 1.25rem; line-height: 1; display: flex; align-items: center; justify-content: center; }
     .modal-close:hover { background: rgba(255,255,255,0.3); }
-    .modal-body {
-      padding: 1.5rem;
-      overflow-y: auto;
-      color: #E2E8F0;
-      flex: 1;
-    }
-    .modal-body h4 { color: #0b5fff; font-size: 1rem; font-weight: 600; margin: 1rem 0 0.5rem 0; }
+    .modal-body { padding: 1.5rem; overflow-y: auto; color: #E2E8F0; flex: 1; }
+    .modal-body h4 { color: #0b5fff; font-size: 1rem; font-weight: 600; margin: 1.25rem 0 0.75rem 0; }
     .modal-body h4:first-child { margin-top: 0; }
     .modal-body p { margin: 0.5rem 0; line-height: 1.6; }
     .modal-body ul { margin: 0.5rem 0; padding-left: 1.25rem; }
-    .modal-body li { margin: 0.375rem 0; line-height: 1.5; }
-    .modal-footer {
-      padding: 1rem 1.5rem;
-      border-top: 1px solid #334155;
-      display: flex;
-      justify-content: flex-end;
-      gap: 0.75rem;
-    }
-    .modal-btn-primary {
-      background: #0b5fff;
-      color: white;
-      padding: 0.5rem 1rem;
-      border: none;
-      border-radius: 0.375rem;
-      font-weight: 500;
-      cursor: pointer;
-    }
+    .modal-body li { margin: 0.375rem 0; }
+    .modal-footer { padding: 1rem 1.5rem; border-top: 1px solid #334155; display: flex; justify-content: flex-end; gap: 0.75rem; }
+    .modal-btn-primary { background: #0b5fff; color: white; border: none; padding: 0.5rem 1.25rem; border-radius: 0.375rem; font-weight: 500; cursor: pointer; }
     .modal-btn-primary:hover { background: #0047cc; }
-    .modal-btn-secondary {
-      background: transparent;
-      color: #94A3B8;
-      padding: 0.5rem 1rem;
-      border: 1px solid #334155;
-      border-radius: 0.375rem;
-      font-weight: 500;
-      cursor: pointer;
-    }
-    .modal-btn-secondary:hover { border-color: #94A3B8; color: white; }
-    .highlight-box {
-      background: rgba(11, 95, 255, 0.1);
-      border-left: 3px solid #0b5fff;
-      padding: 0.75rem 1rem;
-      margin: 1rem 0;
-      border-radius: 0 0.375rem 0.375rem 0;
-    }
-    .tip-box {
-      background: rgba(16, 185, 129, 0.1);
-      border-left: 3px solid #10b981;
-      padding: 0.75rem 1rem;
-      margin: 1rem 0;
-      border-radius: 0 0.375rem 0.375rem 0;
-    }
+    .highlight-box { background: rgba(11, 95, 255, 0.1); border: 1px solid rgba(11, 95, 255, 0.3); border-radius: 0.5rem; padding: 0.75rem 1rem; margin: 1rem 0; }
+    .tip-box { background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 0.5rem; padding: 0.75rem 1rem; margin: 1rem 0; }
+    .status-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem; margin: 1rem 0; }
+    .status-explain-card { background: rgba(15, 23, 42, 0.5); border: 1px solid #334155; border-radius: 0.5rem; padding: 0.75rem; }
+    .status-explain-card .status-badge { margin-bottom: 0.5rem; }
+    .status-text { font-size: 0.75rem; color: #94A3B8; line-height: 1.4; }
   </style>
 </head>
-<body class="bg-[#0F172A]">
+<body>
 <div id="docuwaivz-app" class="flex h-screen overflow-hidden">
-
-  <!-- LEFT SIDEBAR -->
   <aside class="w-80 bg-[#0F172A] border-r border-[#334155] flex flex-col z-10 text-white">
     <div class="px-5 pt-8 pb-4">
       <div class="flex items-start justify-between">
-        <h1 class="text-4xl font-bold text-white tracking-tight leading-none -mt-1">
-          Adopt<span class="ml-0.5 text-[#0b5fff]">(k)</span>
-        </h1>
+        <h1 class="text-4xl font-bold text-white tracking-tight leading-none -mt-1">Adopt<span class="ml-0.5 text-[#0b5fff]">(k)</span></h1>
         <button id="help-btn" class="help-btn-dark ml-4 flex-shrink-0">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-          </svg>
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
           Help
         </button>
       </div>
       <p class="text-sm text-[#94A3B8] mt-2">Adoption Agreement Parser</p>
     </div>
-
     <div class="p-6 flex-1 overflow-y-auto">
-      <!-- Model selection -->
       <div class="mb-6">
         <h2 class="text-sm font-semibold text-[#0b5fff] uppercase tracking-wider mb-3">1. LLM Model</h2>
         <label for="llm-model" class="block text-sm font-medium text-white mb-2">Model (server-side)</label>
@@ -321,22 +98,16 @@
         </select>
         <p class="mt-1 text-xs text-[#94A3B8]">Select the model to use, or keep the default (recommended)</p>
       </div>
-
-      <!-- Upload -->
       <div class="mb-6 pt-4 border-t border-[#334155]">
         <h2 class="text-sm font-semibold text-[#0b5fff] uppercase tracking-wider mb-3">2. Select Adoption Agreement</h2>
         <label id="upload-label" class="upload-area-dark flex flex-col items-center justify-center w-full h-32 rounded-lg cursor-pointer opacity-50 pointer-events-none">
           <div class="flex flex-col items-center justify-center pt-5 pb-6">
-            <svg id="upload-icon" class="w-8 h-8 mb-3 text-[#64748B]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
-            </svg>
+            <svg id="upload-icon" class="w-8 h-8 mb-3 text-[#64748B]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
             <p class="text-sm text-[#94A3B8]"><span class="font-semibold" id="upload-text">Click to select PDF</span></p>
           </div>
           <input id="file-upload" type="file" class="hidden" accept=".pdf" />
         </label>
       </div>
-
-      <!-- Status -->
       <div class="mb-6 pt-4 border-t border-[#334155]">
         <h2 class="text-sm font-semibold text-[#0b5fff] uppercase tracking-wider mb-3">3. Status &amp; Processing</h2>
         <div id="status-container" class="status-section-dark">
@@ -349,39 +120,37 @@
         <div id="error-box" class="hidden mt-3 p-3 bg-red-500/20 border border-red-400/30 rounded-lg text-xs text-red-200 break-words max-h-60 overflow-y-auto"></div>
         <button id="retry-init-btn" class="hidden w-full mt-3 py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-[#0b5fff] hover:bg-[#0047cc] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#0b5fff]">Retry Initialization</button>
       </div>
+      <div class="mb-6 pt-4 border-t border-[#334155]">
+        <h2 class="text-sm font-semibold text-[#0b5fff] uppercase tracking-wider mb-3">4. Accuracy Settings</h2>
+        <div class="space-y-3">
+          <div class="flex items-center justify-between">
+            <div><div class="text-sm font-medium text-white">Strict Mode</div><div class="text-xs text-[#94A3B8]">Only show certified values</div></div>
+            <div id="strict-mode-toggle" class="toggle-switch active"></div>
+          </div>
+          <div class="flex items-center justify-between">
+            <div><div class="text-sm font-medium text-white">Show Reasons</div><div class="text-xs text-[#94A3B8]">Explain why fields are blank</div></div>
+            <div id="show-reasons-toggle" class="toggle-switch active"></div>
+          </div>
+        </div>
+      </div>
     </div>
-
     <div class="p-4 border-t border-[#334155] bg-[#1E293B]/50">
-      <p class="text-xs text-[#94A3B8]">PDF extraction and text cleaning occur locally (Pyodide/WASM). Cleaned text is sent to your Adopt(k) extraction service.</p>
+      <p class="text-xs text-[#94A3B8]"><strong class="text-white">Trust Contract:</strong> If a value appears, it's certified correct. Empty fields mean we couldn't verify with certainty.</p>
     </div>
   </aside>
-
-  <!-- MAIN CONTENT -->
   <main class="flex-1 overflow-y-auto bg-[#0F172A]">
     <div class="p-8">
       <div id="results-header" class="bg-gradient-to-r from-[#0b5fff] to-[#0047cc] p-6 rounded-t-xl shadow-lg border border-[#1e4ec1]">
         <div class="flex items-start justify-between">
-          <div>
-            <h2 class="text-2xl font-bold text-white">Plan Extraction Results</h2>
-            <p class="text-sm text-white/90 mt-1">Review the extracted data below. Certified values are verified from the source document.</p>
-          </div>
-          <div class="text-right">
-            <div class="text-xs text-white/70">Trust Level</div>
-            <div class="text-lg font-bold text-white">100% or Silent</div>
-          </div>
+          <div><h2 class="text-2xl font-bold text-white">Plan Extraction Results</h2><p class="text-sm text-white/90 mt-1">Review the extracted data below. Certified values are verified from the source document.</p></div>
+          <div class="text-right"><div class="text-xs text-white/70">Trust Level</div><div class="text-lg font-bold text-white">100% or Silent</div></div>
         </div>
         <div id="coverage-bar" class="coverage-bar mt-4 hidden"></div>
       </div>
-
       <div id="results-container" class="relative bg-[#1E293B] shadow-sm border-x border-b border-[#334155] rounded-b-xl">
-        <div id="results-table" class="overflow-x-auto">
-          <p class="text-[#94A3B8] text-center py-20">Waiting for PDF upload and analysis...</p>
-        </div>
+        <div id="results-table" class="overflow-x-auto"><p class="text-[#94A3B8] text-center py-20">Waiting for PDF upload and analysis...</p></div>
         <div id="results-loading-overlay" class="results-overlay hidden">
-          <div class="clock-spinner">
-            <div class="clock-hand-hour"></div>
-            <div class="clock-hand-minute"></div>
-          </div>
+          <div class="clock-spinner"><div class="clock-hand-hour"></div><div class="clock-hand-minute"></div></div>
           <div class="results-overlay-text" id="results-overlay-text">Analyzing adoption agreement...</div>
           <div class="results-overlay-subtext">⏪ Saving you hours of manual data entry</div>
         </div>
@@ -391,7 +160,7 @@
       <div class="mt-4 bg-[#1E293B] rounded-xl shadow-sm border border-[#334155] overflow-hidden">
         <div class="px-6 py-3 bg-gradient-to-r from-[#0b5fff] to-[#0047cc] flex items-center justify-between">
           <h3 class="text-sm font-semibold text-white">Export Options</h3>
-          <span class="text-xs text-white/90">Uses latest extraction</span>
+          <span id="export-mode-label" class="text-xs text-white/90">Certified values only</span>
         </div>
         <div class="px-6 py-4">
           <div class="flex flex-wrap gap-3">
@@ -415,15 +184,48 @@
         <div class="modal-body">
           <h4>🎯 What is Adopt(k)?</h4>
           <p>Adopt(k) is an AI-powered tool that automatically extracts key plan design information from 401(k) adoption agreements. Upload a PDF and get structured data in seconds—no manual data entry required.</p>
-          <div class="highlight-box"><strong>💡 Time Savings:</strong> What typically takes 30-45 minutes of manual review is completed in under 60 seconds.</div>
+          
+          <div class="highlight-box">
+            <strong>🔒 Trust Contract:</strong> If Adopt(k) returns a value, it's certified correct. You don't need to double-check. Empty fields mean we couldn't verify with 100% certainty.
+          </div>
+
           <h4>📋 How to Extract Plan Data</h4>
           <ul>
             <li><strong>Step 1:</strong> Select your preferred LLM model (GPT-5.2 recommended)</li>
             <li><strong>Step 2:</strong> Click the upload area and select your adoption agreement PDF</li>
             <li><strong>Step 3:</strong> Wait for the extraction to complete</li>
-            <li><strong>Step 4:</strong> Review and export your structured data</li>
+            <li><strong>Step 4:</strong> Review certified values and click "Source" to see evidence</li>
           </ul>
-          <div class="tip-box"><strong>🔒 Privacy:</strong> PDF text extraction happens entirely in your browser. Only the cleaned text is sent to our secure extraction API.</div>
+
+          <h4>✅ Understanding Status Badges</h4>
+          <div class="status-grid">
+            <div class="status-explain-card">
+              <span class="status-badge certified">CERTIFIED</span>
+              <div class="status-text">Value verified directly from document text. Safe to use without review.</div>
+            </div>
+            <div class="status-explain-card">
+              <span class="status-badge ambiguous">AMBIGUOUS</span>
+              <div class="status-text">Document uses unclear language like "may provide" or "at discretion".</div>
+            </div>
+            <div class="status-explain-card">
+              <span class="status-badge conflict">CONFLICT</span>
+              <div class="status-text">Multiple conflicting provisions found. Requires manual review.</div>
+            </div>
+            <div class="status-explain-card">
+              <span class="status-badge silent">SILENT</span>
+              <div class="status-text">Document doesn't address this provision at all.</div>
+            </div>
+          </div>
+
+          <h4>⚙️ Accuracy Settings</h4>
+          <ul>
+            <li><strong>Strict Mode:</strong> Only show certified values (recommended)</li>
+            <li><strong>Show Reasons:</strong> Display why fields are blank</li>
+          </ul>
+
+          <div class="tip-box">
+            <strong>💡 Pro Tip:</strong> Click the "Source" button on any certified field to see the exact document text that supports the extracted value.
+          </div>
         </div>
         <div class="modal-footer">
           <button id="help-modal-close-2" class="modal-btn-primary">Got it!</button>
@@ -451,7 +253,7 @@
 </div>
 
 <script>
-(function () {
+(function() {
   const EXTRACTOR_API_BASE = "https://docuwaivz-plan-extractor-gursnjup4q-uc.a.run.app";
 
   let pyodideInstance = null;
@@ -460,8 +262,9 @@
   let lastExtractionRows = null;
   let lastHtmlTableString = "";
 
-  const STRICT_MODE = true;
-  const SHOW_BLANK_REASONS = true;
+  // Mode settings
+  let STRICT_MODE = true;
+  let SHOW_BLANK_REASONS = true;
 
   // ---------- Dynamic runtime loaders ----------
   function loadPdfJsIfNeeded() {
@@ -475,11 +278,8 @@
         script.setAttribute('data-docuwaivz-pdfjs', '1');
         document.head.appendChild(script);
       }
-      script.addEventListener('load', () => {
-        if (window.pdfjsLib && typeof window.pdfjsLib.getDocument === 'function') resolve();
-        else reject(new Error("PDF.js loaded but window.pdfjsLib is not available."));
-      }, { once: true });
-      script.addEventListener('error', () => reject(new Error("PDF.js script failed to load.")), { once: true });
+      script.addEventListener('load', () => { window.pdfjsLib ? resolve() : reject(new Error("PDF.js not available")); }, { once: true });
+      script.addEventListener('error', () => reject(new Error("PDF.js failed to load")), { once: true });
     });
   }
 
@@ -494,31 +294,61 @@
         script.setAttribute('data-docuwaivz-pyodide', '1');
         document.head.appendChild(script);
       }
-      script.addEventListener('load', () => {
-        if (window.loadPyodide) resolve();
-        else reject(new Error("Pyodide script loaded but window.loadPyodide is not available."));
-      }, { once: true });
-      script.addEventListener('error', () => reject(new Error("Pyodide script failed to load.")), { once: true });
+      script.addEventListener('load', () => { window.loadPyodide ? resolve() : reject(new Error("Pyodide not available")); }, { once: true });
+      script.addEventListener('error', () => reject(new Error("Pyodide failed to load")), { once: true });
     });
   }
 
+  // ---------- Python cleaning script ----------
   const pythonCleaningScript = `
 import re
+import json
+DEFAULT_REPLACEMENTS = {
+    "checkbox_selected": [("☑", "[X]"), ("☑", "[X]"), ("🗹", "[X]"), ("[x ]", "[X]"), ("[ X ]", "[X]"), ("[x]", "[X]"), ("[X]", "[X]"), ("\\\\uf0be", "[X]"), ("\\\\uf058", "[X]"), ("\\\\uf052", "[X]"), ("(x)", "[X]")],
+    "checkbox_unselected": [("☐", "[ ]"), ("◻", "[ ]"), ("▢", "[ ]"), ("[ ]", "[ ]"), ("\\\\uf0a8", "[ ]"), ("()", "[ ]")],
+    "punctuation": [(""", '"'), (""", '"'), ("'", "'"), ("'", "'"), ("–", "-"), ("—", "-"), ("−", "-")],
+    "whitespace": [("\\\\u00a0", " "), ("\\\\u202f", " "), ("\\\\u2009", " "), ("\\\\r\\\\n", "\\\\n"), ("\\\\r", "\\\\n")],
+    "bullets": [("\\\\u2022", "•"), ("•", "•")],
+    "misc": [("\\\\ufeff", "")]
+}
+CONTROL_CHARS_RE = re.compile(r"[\\\\x01-\\\\x08\\\\x0b\\\\x0c\\\\x0e-\\\\x1f]")
+def build_replacements(profile=None):
+    prof = profile or DEFAULT_REPLACEMENTS
+    order = []
+    for key in ["checkbox_selected", "checkbox_unselected", "punctuation", "whitespace", "bullets", "misc"]:
+        order.extend(prof.get(key, []))
+    return order
+REPLACEMENTS_CACHE = build_replacements()
+def replace_special_chars(text):
+    if not text: return text
+    for src, dst in REPLACEMENTS_CACHE:
+        text = text.replace(src, dst)
+    return text
 def clean_extracted_text(text, collapse_internal_spaces=True, preserve_indent=False):
     if not text: return text
-    text = text.replace('\\r\\n', '\\n').replace('\\r', '\\n')
-    lines = text.split('\\n')
+    text = replace_special_chars(text)
+    text = CONTROL_CHARS_RE.sub("", text)
+    lines = text.split("\\\\n")
     cleaned_lines = []
     for line in lines:
-        s = line.strip()
-        if collapse_internal_spaces:
-            s = re.sub(r'[ \\t]{2,}', ' ', s)
-        cleaned_lines.append(s)
-    text = '\\n'.join(cleaned_lines)
-    text = re.sub(r'\\n{3,}', '\\n\\n', text)
+        if preserve_indent:
+            m = re.match(r"^([ \\\\t]*)(.*)$", line)
+            if m:
+                lead, body = m.group(1), m.group(2)
+                if collapse_internal_spaces: body = re.sub(r"[ \\\\t]{2,}", " ", body)
+                cleaned_lines.append(lead + body.rstrip())
+            else:
+                cleaned_lines.append(line.rstrip())
+        else:
+            s = line.strip()
+            if collapse_internal_spaces: s = re.sub(r"[ \\\\t]{2,}", " ", s)
+            cleaned_lines.append(s)
+    text = "\\\\n".join(cleaned_lines)
+    text = re.sub(r'\\\\n{3,}', '\\\\n\\\\n', text)
     return text
 `;
 
+  // ---------- Field list ----------
   const displayOrderMD = `## Company Information
 Company Name
 Company Street
@@ -641,54 +471,43 @@ Will a Recipient be entitled to request a Direct In-Plan Roth Rollover
   function updateStatus(text, isError = false, hideLoader = false) {
     const statusText = qs('#status-text');
     const loader = qs('#py-loader');
-    if (!statusText || !loader) return;
-    statusText.innerText = text;
-    let colorClass = 'text-white';
-    if (isError) colorClass = 'text-red-300';
-    else if (hideLoader) colorClass = 'text-emerald-300';
-    statusText.className = colorClass;
-    if (hideLoader || isError) loader.classList.add('hidden');
-    else loader.classList.remove('hidden');
+    if (statusText) {
+      statusText.innerText = text;
+      statusText.style.color = isError ? '#FCA5A5' : (hideLoader ? '#6EE7B7' : 'white');
+    }
+    if (loader) {
+      if (hideLoader || isError) loader.classList.add('hidden');
+      else loader.classList.remove('hidden');
+    }
   }
-  function showError(message, traceback = null) {
+  function showError(message) {
     const errorBox = qs('#error-box');
     const retryBtn = qs('#retry-init-btn');
-    if (!errorBox) return;
-    let content = `<strong>Error:</strong> ${escapeHtml(message)}`;
-    if (traceback) content += `<br><br><strong>Details:</strong><pre class="mt-2 p-2 bg-black/20 border border-red-400/30 rounded text-xs overflow-x-auto text-red-200">${escapeHtml(traceback)}</pre>`;
-    errorBox.innerHTML = content;
-    errorBox.classList.remove('hidden');
-    if (initializationInProgress && retryBtn) retryBtn.classList.remove('hidden');
+    if (errorBox) {
+      errorBox.innerHTML = `<strong>Error:</strong> ${escapeHtml(message)}`;
+      errorBox.classList.remove('hidden');
+    }
+    if (retryBtn && initializationInProgress) retryBtn.classList.remove('hidden');
   }
   function enableUpload() {
     const uploadLabel = qs('#upload-label');
-    const uploadText = qs('#upload-text');
     const uploadIcon = qs('#upload-icon');
-    if (!uploadLabel) return;
-    uploadLabel.classList.remove('opacity-50', 'pointer-events-none');
-    uploadLabel.style.opacity = '1';
-    uploadLabel.style.pointerEvents = 'auto';
-    uploadLabel.classList.add('enabled');
-    if (uploadIcon) { uploadIcon.classList.remove('text-[#64748B]'); uploadIcon.classList.add('text-[#0b5fff]'); }
-    if (uploadText) uploadText.textContent = "Click to select PDF";
+    if (uploadLabel) {
+      uploadLabel.classList.remove('opacity-50', 'pointer-events-none');
+      uploadLabel.classList.add('enabled');
+    }
+    if (uploadIcon) {
+      uploadIcon.classList.remove('text-[#64748B]');
+      uploadIcon.classList.add('text-[#0b5fff]');
+    }
   }
   function sanitizeStringForPython(s) { return s.replace(/\0/g, ''); }
-
-  // ---------- Certification helpers ----------
-  function isCertified(status) {
-    const st = (status || '').toUpperCase();
-    return st === 'CERTIFIED' || st === 'OK' || st === '';
-  }
-  function getStatusClass(status) {
-    const st = (status || '').toUpperCase();
-    if (st === 'CERTIFIED' || st === 'OK') return 'certified';
-    if (st === 'AMBIGUOUS') return 'ambiguous';
-    if (st === 'CONFLICT') return 'conflict';
-    if (st === 'SILENT' || st === 'NOT_FOUND') return 'silent';
-    return 'uncertain';
+  function escapeHtml(unsafe) {
+    if (unsafe === null || unsafe === undefined) return '';
+    return String(unsafe).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
   }
 
-  // ---------- Display / table helpers ----------
+  // ---------- Display helpers ----------
   function parseDisplayOrder(markdown) {
     const lines = markdown.split('\n');
     const orderedFields = [];
@@ -703,16 +522,21 @@ Will a Recipient be entitled to request a Direct In-Plan Roth Rollover
   }
   function buildRowLookup(rows) {
     const lookup = {};
-    rows.forEach(r => { if (!r || typeof r.label !== 'string') return; lookup[r.label] = r; });
+    rows.forEach(r => { if (r && typeof r.label === 'string') lookup[r.label] = r; });
     return lookup;
   }
-  function escapeHtml(unsafe) {
-    if (unsafe === null || unsafe === undefined) return '';
-    if (typeof unsafe !== 'string') return String(unsafe);
-    return unsafe.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+  function isCertified(status) {
+    const st = (status || '').toUpperCase();
+    return st === 'CERTIFIED' || st === 'OK' || st === '';
   }
-
-  // ---------- Coverage bar ----------
+  function getStatusClass(status) {
+    const st = (status || '').toUpperCase();
+    if (st === 'CERTIFIED' || st === 'OK') return 'certified';
+    if (st === 'AMBIGUOUS') return 'ambiguous';
+    if (st === 'CONFLICT') return 'conflict';
+    if (st === 'SILENT' || st === 'NOT_FOUND') return 'silent';
+    return 'uncertain';
+  }
   function computeCoverage(rows, displayOrder) {
     const rowLookup = buildRowLookup(rows);
     let certified = 0, review = 0, silent = 0;
@@ -739,11 +563,10 @@ Will a Recipient be entitled to request a Direct In-Plan Roth Rollover
     coverageBar.classList.remove('hidden');
   }
 
-  // ---------- Table building with Source buttons ----------
   function buildHtmlTable(rows) {
     const displayOrder = parseDisplayOrder(displayOrderMD);
     const rowLookup = buildRowLookup(rows);
-    let html = '<table class="results-table"><thead><tr><th class="field-col">Field Name</th><th class="value-col">Value</th></tr></thead>';
+    let html = '<table class="results-table"><thead><tr><th>Field Name</th><th>Value</th></tr></thead>';
     let currentGroup = null;
 
     displayOrder.forEach(item => {
@@ -783,6 +606,7 @@ Will a Recipient be entitled to request a Direct In-Plan Roth Rollover
     html += '</table>';
     return html;
   }
+
   function renderData(rows) {
     const resultsTable = qs('#results-table');
     if (!resultsTable) return;
@@ -793,7 +617,7 @@ Will a Recipient be entitled to request a Direct In-Plan Roth Rollover
     renderCoverage(rows);
   }
 
-  // ========== EVIDENCE MODAL FUNCTION ==========
+  // ========== EVIDENCE MODAL ==========
   window.showEvidence = function(dataStr) {
     try {
       const data = typeof dataStr === 'string' ? JSON.parse(dataStr) : dataStr;
@@ -814,6 +638,7 @@ Will a Recipient be entitled to request a Direct In-Plan Roth Rollover
       modal.style.display = 'flex';
     } catch (e) { console.error('Failed to parse evidence:', e); }
   };
+
   window.closeEvidenceModal = function() {
     const modal = document.getElementById('evidence-modal');
     if (modal) { modal.classList.add('hidden'); modal.style.display = 'none'; }
@@ -840,15 +665,14 @@ Will a Recipient be entitled to request a Direct In-Plan Roth Rollover
   function downloadFile(filename, mimeType, content) {
     const blob = new Blob([content], { type: mimeType });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url; a.download = filename;
+    const a = document.createElement('a'); a.href = url; a.download = filename;
     document.body.appendChild(a); a.click(); a.remove();
     URL.revokeObjectURL(url);
   }
   async function handleExportCopy() {
     if (!ensureExtractionAvailable()) return;
     try { await navigator.clipboard.writeText(lastHtmlTableString || buildHtmlTable(lastExtractionRows)); alert("HTML table copied to clipboard."); }
-    catch (err) { console.error("Copy failed:", err); alert("Copy failed."); }
+    catch (err) { alert("Copy failed. See console."); }
   }
   function handleExportHtml() {
     if (!ensureExtractionAvailable()) return;
@@ -1024,11 +848,329 @@ Will a Recipient be entitled to request a Direct In-Plan Roth Rollover
     if (evidenceModalClose) evidenceModalClose.addEventListener('click', window.closeEvidenceModal);
     if (evidenceCloseBtn) evidenceCloseBtn.addEventListener('click', window.closeEvidenceModal);
     if (evidenceModal) evidenceModal.addEventListener('click', (e) => { if (e.target.id === 'evidence-modal') window.closeEvidenceModal(); });
+
+    // Toggle switches
+    const strictToggle = qs('#strict-mode-toggle');
+    const reasonsToggle = qs('#show-reasons-toggle');
+    const exportLabel = qs('#export-mode-label');
+    
+    if (strictToggle) {
+      strictToggle.addEventListener('click', function() {
+        STRICT_MODE = !STRICT_MODE;
+        this.classList.toggle('active', STRICT_MODE);
+        if (exportLabel) exportLabel.textContent = STRICT_MODE ? 'Certified values only' : 'All extracted values';
+        if (lastExtractionRows) renderData(lastExtractionRows);
+      });
+    }
+    if (reasonsToggle) {
+      reasonsToggle.addEventListener('click', function() {
+        SHOW_BLANK_REASONS = !SHOW_BLANK_REASONS;
+        this.classList.toggle('active', SHOW_BLANK_REASONS);
+        if (lastExtractionRows) renderData(lastExtractionRows);
+      });
+    }
   }
 
   function init() { hideOverlay(); wireFileUpload(); wireButtons(); initSystemEngineWithRuntimes(); }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
   else init();
+})();
+</script>
+</body>
+</html>
+          <div class="results-overlay-subtext">⏪ Saving you hours of manual data entry</div>
+        </div>
+      </div>
+      <div class="mt-4 bg-[#1E293B] rounded-xl shadow-sm border border-[#334155] overflow-hidden">
+        <div class="px-6 py-3 bg-gradient-to-r from-[#0b5fff] to-[#0047cc] flex items-center justify-between">
+          <h3 class="text-sm font-semibold text-white">Export Options</h3>
+          <span id="export-mode-label" class="text-xs text-white/90">Certified values only</span>
+        </div>
+        <div class="px-6 py-4">
+          <div class="flex flex-wrap gap-3">
+            <button id="export-copy-btn" class="px-4 py-2 text-sm font-medium rounded-md border border-[#0b5fff] text-[#0b5fff] bg-transparent hover:bg-[#0b5fff] hover:text-white transition">📋 Copy</button>
+            <button id="export-html-btn" class="px-4 py-2 text-sm font-medium rounded-md border border-[#0b5fff] text-[#0b5fff] bg-transparent hover:bg-[#0b5fff] hover:text-white transition">🌐 HTML Table</button>
+            <button id="export-pdf-btn" class="px-4 py-2 text-sm font-medium rounded-md border border-[#0b5fff] text-[#0b5fff] bg-transparent hover:bg-[#0b5fff] hover:text-white transition">📄 PDF Report</button>
+            <button id="export-csv-btn" class="px-4 py-2 text-sm font-medium rounded-md border border-[#0b5fff] text-[#0b5fff] bg-transparent hover:bg-[#0b5fff] hover:text-white transition">📊 CSV file</button>
+            <button id="export-nextstep-btn" class="px-4 py-2 text-sm font-medium rounded-md bg-[#0b5fff] text-white hover:bg-[#0047cc] transition">📄 Generate Pre-Filled DPF</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div id="help-modal" class="modal-backdrop hidden">
+      <div class="modal-container">
+        <div class="modal-header"><h3>📖 How to Use Adopt(k)</h3><button id="help-modal-close" class="modal-close">&times;</button></div>
+        <div class="modal-body">
+          <h4>🎯 What is Adopt(k)?</h4>
+          <p>Adopt(k) is an AI-powered tool that automatically extracts key plan design information from 401(k) adoption agreements. Upload a PDF and get structured data in seconds—no manual data entry required.</p>
+          <div class="highlight-box"><strong>🔒 Trust Contract:</strong> If Adopt(k) returns a value, it's certified correct. You don't need to double-check. Empty fields mean we couldn't verify with 100% certainty.</div>
+          <h4>📋 How to Extract Plan Data</h4>
+          <ul><li><strong>Step 1:</strong> Select your preferred LLM model (GPT-5.2 recommended)</li><li><strong>Step 2:</strong> Click the upload area and select your adoption agreement PDF</li><li><strong>Step 3:</strong> Wait for the extraction to complete</li><li><strong>Step 4:</strong> Review certified values and click "Source" to see evidence</li></ul>
+          <h4>✅ Understanding Status Badges</h4>
+          <div class="status-grid">
+            <div class="status-explain-card"><span class="status-badge certified">CERTIFIED</span><div class="status-text">Value verified directly from document text. Safe to use without review.</div></div>
+            <div class="status-explain-card"><span class="status-badge ambiguous">AMBIGUOUS</span><div class="status-text">Document uses unclear language like "may provide" or "at discretion".</div></div>
+            <div class="status-explain-card"><span class="status-badge conflict">CONFLICT</span><div class="status-text">Multiple conflicting provisions found. Requires manual review.</div></div>
+            <div class="status-explain-card"><span class="status-badge silent">SILENT</span><div class="status-text">Document doesn't address this provision at all.</div></div>
+          </div>
+          <h4>⚙️ Accuracy Settings</h4>
+          <ul><li><strong>Strict Mode:</strong> Only show certified values (recommended)</li><li><strong>Show Reasons:</strong> Display why fields are blank</li></ul>
+          <div class="tip-box"><strong>💡 Pro Tip:</strong> Click the "Source" button on any certified field to see the exact document text that supports the extracted value.</div>
+        </div>
+        <div class="modal-footer"><button id="help-modal-close-2" class="modal-btn-primary">Got it!</button></div>
+      </div>
+    </div>
+    <div id="evidence-modal" class="modal-backdrop hidden">
+      <div class="modal-container" style="max-width: 600px;">
+        <div class="modal-header" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);"><h3>📋 Source Evidence</h3><button id="evidence-modal-close" class="modal-close">&times;</button></div>
+        <div class="modal-body" id="evidence-body"></div>
+        <div class="modal-footer"><button id="evidence-close-btn" class="modal-btn-primary">Close</button></div>
+      </div>
+    </div>
+  </main>
+</div>
+<script>
+(function() {
+  const EXTRACTOR_API_BASE = "https://docuwaivz-plan-extractor-gursnjup4q-uc.a.run.app";
+  let pyodideInstance = null, pdfjsLibInstance = null, initializationInProgress = false;
+  let lastExtractionRows = null, lastHtmlTableString = "";
+  let STRICT_MODE = true, SHOW_BLANK_REASONS = true;
+
+  function loadPdfJsIfNeeded() {
+    return new Promise((resolve, reject) => {
+      if (window.pdfjsLib && typeof window.pdfjsLib.getDocument === 'function') { resolve(); return; }
+      let script = document.querySelector('script[data-docuwaivz-pdfjs]');
+      if (!script) { script = document.createElement('script'); script.src = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"; script.async = true; script.setAttribute('data-docuwaivz-pdfjs', '1'); document.head.appendChild(script); }
+      script.addEventListener('load', () => { window.pdfjsLib ? resolve() : reject(new Error("PDF.js not available")); }, { once: true });
+      script.addEventListener('error', () => reject(new Error("PDF.js failed to load")), { once: true });
+    });
+  }
+  function loadPyodideRuntimeIfNeeded() {
+    return new Promise((resolve, reject) => {
+      if (window.loadPyodide) { resolve(); return; }
+      let script = document.querySelector('script[data-docuwaivz-pyodide]');
+      if (!script) { script = document.createElement('script'); script.src = "https://cdn.jsdelivr.net/pyodide/v0.25.0/full/pyodide.js"; script.async = true; script.setAttribute('data-docuwaivz-pyodide', '1'); document.head.appendChild(script); }
+      script.addEventListener('load', () => { window.loadPyodide ? resolve() : reject(new Error("Pyodide not available")); }, { once: true });
+      script.addEventListener('error', () => reject(new Error("Pyodide failed to load")), { once: true });
+    });
+  }
+
+  const pythonCleaningScript = `
+import re
+DEFAULT_REPLACEMENTS = {"checkbox_selected": [("☑", "[X]"), ("🗹", "[X]"), ("[x]", "[X]"), ("[X]", "[X]")], "checkbox_unselected": [("☐", "[ ]"), ("◻", "[ ]"), ("▢", "[ ]")], "punctuation": [(""", '"'), (""", '"'), ("'", "'"), ("'", "'"), ("–", "-"), ("—", "-")], "whitespace": [("\\\\u00a0", " "), ("\\\\r\\\\n", "\\\\n"), ("\\\\r", "\\\\n")], "misc": [("\\\\ufeff", "")]}
+CONTROL_CHARS_RE = re.compile(r"[\\\\x01-\\\\x08\\\\x0b\\\\x0c\\\\x0e-\\\\x1f]")
+def build_replacements(profile=None):
+    prof = profile or DEFAULT_REPLACEMENTS
+    order = []
+    for key in ["checkbox_selected", "checkbox_unselected", "punctuation", "whitespace", "misc"]:
+        order.extend(prof.get(key, []))
+    return order
+REPLACEMENTS_CACHE = build_replacements()
+def replace_special_chars(text):
+    if not text: return text
+    for src, dst in REPLACEMENTS_CACHE: text = text.replace(src, dst)
+    return text
+def clean_extracted_text(text, collapse_internal_spaces=True, preserve_indent=False):
+    if not text: return text
+    text = replace_special_chars(text)
+    text = CONTROL_CHARS_RE.sub("", text)
+    lines = text.split("\\\\n")
+    cleaned_lines = []
+    for line in lines:
+        s = line.strip()
+        if collapse_internal_spaces: s = re.sub(r"[ \\\\t]{2,}", " ", s)
+        cleaned_lines.append(s)
+    text = "\\\\n".join(cleaned_lines)
+    text = re.sub(r'\\\\n{3,}', '\\\\n\\\\n', text)
+    return text
+`;
+
+  const displayOrderMD = `## Company Information
+Company Name
+Company Street
+Company Street2
+City, State, ZIP
+Company Telephone
+EIN
+Form of Business
+Entity Type
+## Corporate Details
+Employer's Tax Year End
+Plan Year End
+Related Employers
+Related Employers Detail
+Multiple Employer Plan
+Affiliated_Employers
+## Plan Information
+Plan Name
+Original Effective Date
+Restatement Effective Date
+Plan Number
+Type of Plan
+Plan Year
+## Eligibility
+Eligible Employees
+Are Union Employees Excluded?
+Are Non-resident aliens Employees Excluded?
+Are Part time Employees Excluded?
+Are Employees as the result of a transaction described in Code section 410(b)(6)(C) Excluded?
+List of Excluded Employee Groups
+Is There More Than One Service Requirement?
+Service Requirement
+Hour Requirement
+Minimum Age Requirement
+Entry Date
+Elapsed Time or Hours of Service
+Effective Date of Age/Service Requirement (Amnesty Date)
+Counting Predecessor Service
+## Compensation
+Definition of Compensation
+Total Compensation
+Plan Compensation Exclusions
+Period for Determining Compensation
+Using Entry Date Compensation
+## Contributions
+Employer Non-Elective/Profit Sharing Contribution
+Employer Non-Elective/Profit Sharing Contribution Formula
+Employer Non-Elective/Profit Sharing Contribution Formula Type
+Employer Non-Elective/Profit Sharing Contribution Allocation Conditions
+Exceptions to Employer Non-Elective/Profit Sharing Contribution Allocation Conditions
+Salary Deferrals
+Roth Deferrals
+ADP/ACP Testing Method
+In-Plan Roth Transfers/Conversions Permitted
+Automatic Deferral Election
+Automatic Deferral Election Start Date
+Automatic Deferral Election Initial Percentage
+Automatic Deferral Election Increase
+Automatic Deferral Election Maximum Percentage
+Automatic Deferral Election Applicable To
+Matching Contributions
+Matching Contribution Formula
+Limit on Matching Contribution
+Period for Determining Matching Contributions
+Matching Contribution Allocation Conditions
+Exceptions to Matching Contribution Allocation Conditions
+## Safe Harbor
+Safe Harbor 401(k) Plan
+Is This a QACA Plan?
+Safe Harbor Type
+Safe Harbor Formula
+Period for Determining Safe Harbor Contribution
+Eligibility for Safe Harbor Contribution
+Safe Harbor Delayed Effective Date
+## Vesting
+Normal Retirement Age
+Early Retirement Age
+Retirement Age Years of Participation Required
+Retirement Age Years of Employment Required
+Vesting Schedule
+Vesting Exclusions
+Vesting for QACA
+Immediate Vesting Upon Death, Disability, ERA
+## Distributions
+In-Service Distributions at Age 59.5
+Sources Available for In-Service Distributions at Age 59.5
+Hardship Distributions
+Sources Available for Hardship Distributions
+Loans Allowed
+Number of Loans Allowed at a Time
+Loan Rate of Interest
+## Administration
+Top Paid Group Applicable
+Owner/Trustee Name
+Trustee Title
+Will a Recipient be entitled to request a Direct In-Plan Roth Rollover
+`;
+
+  function qs(sel) { return document.querySelector('#docuwaivz-app ' + sel); }
+  function showOverlay(message) { const o = qs('#results-loading-overlay'), m = qs('#results-overlay-text'); if (o) o.style.display = 'flex'; if (m && message) m.textContent = message; }
+  function hideOverlay() { const o = qs('#results-loading-overlay'); if (o) o.style.display = 'none'; }
+  function updateStatus(text, isError = false, hideLoader = false) {
+    const st = qs('#status-text'), ld = qs('#py-loader');
+    if (st) { st.innerText = text; st.style.color = isError ? '#FCA5A5' : (hideLoader ? '#6EE7B7' : 'white'); }
+    if (ld) { if (hideLoader || isError) ld.classList.add('hidden'); else ld.classList.remove('hidden'); }
+  }
+  function showError(message) { const e = qs('#error-box'), r = qs('#retry-init-btn'); if (e) { e.innerHTML = '<strong>Error:</strong> ' + escapeHtml(message); e.classList.remove('hidden'); } if (r && initializationInProgress) r.classList.remove('hidden'); }
+  function enableUpload() { const u = qs('#upload-label'), i = qs('#upload-icon'); if (u) { u.classList.remove('opacity-50', 'pointer-events-none'); u.classList.add('enabled'); } if (i) { i.classList.remove('text-[#64748B]'); i.classList.add('text-[#0b5fff]'); } }
+  function sanitizeStringForPython(s) { return s.replace(/\0/g, ''); }
+  function escapeHtml(unsafe) { if (unsafe === null || unsafe === undefined) return ''; return String(unsafe).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;"); }
+
+  function parseDisplayOrder(markdown) { const lines = markdown.split('\n'), orderedFields = []; let currentGroup = null; lines.forEach(line => { line = line.trim(); if (!line) return; if (line.startsWith('##')) currentGroup = line.replace(/^#+\s*/, '').trim(); else if (currentGroup) orderedFields.push({ group: currentGroup, fieldName: line }); }); return orderedFields; }
+  function buildRowLookup(rows) { const lookup = {}; rows.forEach(r => { if (r && typeof r.label === 'string') lookup[r.label] = r; }); return lookup; }
+  function isCertified(status) { const st = (status || '').toUpperCase(); return st === 'CERTIFIED' || st === 'OK' || st === ''; }
+  function getStatusClass(status) { const st = (status || '').toUpperCase(); if (st === 'CERTIFIED' || st === 'OK') return 'certified'; if (st === 'AMBIGUOUS') return 'ambiguous'; if (st === 'CONFLICT') return 'conflict'; if (st === 'SILENT' || st === 'NOT_FOUND') return 'silent'; return 'uncertain'; }
+  function computeCoverage(rows, displayOrder) { const rowLookup = buildRowLookup(rows); let certified = 0, review = 0, silent = 0; displayOrder.forEach(item => { const rowObj = rowLookup[item.fieldName], status = (rowObj?.status || '').toUpperCase(), value = rowObj?.value || ''; if (status === 'CERTIFIED' || status === 'OK' || (value && !status)) certified++; else if (status === 'SILENT' || status === 'NOT_FOUND' || !value) silent++; else review++; }); return { certified, review, silent, total: displayOrder.length }; }
+  function renderCoverage(rows) { const cb = qs('#coverage-bar'); if (!cb) return; const displayOrder = parseDisplayOrder(displayOrderMD), c = computeCoverage(rows, displayOrder); cb.innerHTML = '<div class="coverage-pill certified">✓ Certified: '+c.certified+'</div><div class="coverage-pill review">⚠ Needs Review: '+c.review+'</div><div class="coverage-pill silent">— Silent: '+c.silent+'</div>'; cb.classList.remove('hidden'); }
+
+  function buildHtmlTable(rows) {
+    const displayOrder = parseDisplayOrder(displayOrderMD), rowLookup = buildRowLookup(rows);
+    let html = '<table class="results-table"><thead><tr><th>Field Name</th><th>Value</th></tr></thead>', currentGroup = null;
+    displayOrder.forEach(item => {
+      const rowObj = rowLookup[item.fieldName], rawValue = rowObj?.value ?? '', status = rowObj?.status || '', reason = rowObj?.reason || '', evidence = Array.isArray(rowObj?.evidence) ? rowObj.evidence : [];
+      const value = (typeof rawValue === 'string') ? rawValue.trim() : rawValue, certified = isCertified(status), statusClass = getStatusClass(status);
+      const showValue = STRICT_MODE ? (certified && value) : !!value, valueExists = showValue && value !== null && value !== undefined && value !== '';
+      if (item.group !== currentGroup) { if (currentGroup !== null) html += '</tbody>'; currentGroup = item.group; html += '<tbody><tr class="section-header-row"><td colspan="2">'+escapeHtml(currentGroup)+'</td></tr>'; }
+      let statusBadge = ''; if (!certified && SHOW_BLANK_REASONS && status) { statusBadge = '<span class="status-badge '+statusClass+'">'+escapeHtml(status)+'</span>'; if (reason) statusBadge += '<span style="margin-left: 0.5rem; font-size: 0.75rem; color: #94A3B8;">'+escapeHtml(reason)+'</span>'; }
+      let sourceBtn = ''; if (certified && evidence.length > 0 && valueExists) { const evidenceData = JSON.stringify({ field: item.fieldName, evidence: evidence }); sourceBtn = '<button class="source-btn" onclick=\'window.showEvidence('+JSON.stringify(evidenceData)+')\'>Source</button>'; }
+      html += '<tr class="data-row"><td class="field-cell">'+escapeHtml(item.fieldName)+'</td><td class="value-cell '+(valueExists ? '' : 'empty-value')+'"><div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 0.75rem;"><div style="flex: 1; min-width: 0;">'+(valueExists ? escapeHtml(value) : '')+(!valueExists && statusBadge ? '<div style="margin-top: 0.25rem;">'+statusBadge+'</div>' : '')+'</div>'+(sourceBtn ? '<div style="flex-shrink: 0;">'+sourceBtn+'</div>' : '')+'</div></td></tr>';
+    });
+    if (currentGroup !== null) html += '</tbody>'; html += '</table>'; return html;
+  }
+  function renderData(rows) { const rt = qs('#results-table'); if (!rt) return; const ht = buildHtmlTable(rows); lastHtmlTableString = ht; lastExtractionRows = rows; rt.innerHTML = ht; renderCoverage(rows); }
+
+  window.showEvidence = function(dataStr) {
+    try {
+      const data = typeof dataStr === 'string' ? JSON.parse(dataStr) : dataStr;
+      const modal = document.getElementById('evidence-modal'), body = document.getElementById('evidence-body');
+      if (!modal || !body) { console.error('Evidence modal elements not found'); return; }
+      const field = data.field || 'Field', evidence = Array.isArray(data.evidence) ? data.evidence : [];
+      body.innerHTML = '<div style="margin-bottom: 1rem;"><div style="font-size: 1.125rem; font-weight: 600; color: white;">'+escapeHtml(field)+'</div><div style="font-size: 0.875rem; color: #94A3B8;">Certified source excerpts from the document</div></div>'+evidence.map(ev => '<div class="evidence-card"><div class="evidence-meta">'+(ev.page ? 'Page '+escapeHtml(String(ev.page)) : '')+(ev.section ? ' • Section '+escapeHtml(String(ev.section)) : '')+'</div><div class="evidence-quote">"'+escapeHtml(ev.quote || '')+'"</div></div>').join('')+(evidence.length === 0 ? '<p style="color: #94A3B8;">No source evidence available.</p>' : '');
+      modal.classList.remove('hidden'); modal.style.display = 'flex';
+    } catch (e) { console.error('Failed to parse evidence:', e); }
+  };
+  window.closeEvidenceModal = function() { const m = document.getElementById('evidence-modal'); if (m) { m.classList.add('hidden'); m.style.display = 'none'; } };
+
+  async function callExtractorBackend(cleanedText) {
+    const ms = qs('#llm-model'), model = ms ? ms.value : null;
+    const payload = { document_text: cleanedText, vendor_hint: "Principal 401(k) Nonstandardized Adoption Agreement", model: model, display_order_md: displayOrderMD, strict_mode: true, return_evidence: true };
+    const resp = await fetch(EXTRACTOR_API_BASE + '/extract-plan', { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+    if (!resp.ok) { const text = await resp.text(); throw new Error('Extractor HTTP ' + resp.status + ': ' + text.slice(0, 200) + '...'); }
+    const data = await resp.json(); if (!data.rows || !Array.isArray(data.rows)) throw new Error("Extractor response missing rows[]."); console.log("Model used by backend:", data.model_used); return data.rows;
+  }
+
+  function ensureExtractionAvailable() { if (!lastExtractionRows || !Array.isArray(lastExtractionRows) || lastExtractionRows.length === 0) { alert("No extraction available. Run an extraction first."); return false; } return true; }
+  function downloadFile(filename, mimeType, content) { const blob = new Blob([content], { type: mimeType }), url = URL.createObjectURL(blob), a = document.createElement('a'); a.href = url; a.download = filename; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url); }
+  async function handleExportCopy() { if (!ensureExtractionAvailable()) return; try { await navigator.clipboard.writeText(lastHtmlTableString || buildHtmlTable(lastExtractionRows)); alert("HTML table copied to clipboard."); } catch (err) { alert("Copy failed."); } }
+  function handleExportHtml() { if (!ensureExtractionAvailable()) return; downloadFile("plan_extraction.html", "text/html;charset=utf-8", '<!DOCTYPE html><html><head><meta charset="utf-8"><title>Plan Extraction</title></head><body>'+(lastHtmlTableString || buildHtmlTable(lastExtractionRows))+'</body></html>'); }
+  function handleExportCsv() { if (!ensureExtractionAvailable()) return; const displayOrder = parseDisplayOrder(displayOrderMD), rowLookup = buildRowLookup(lastExtractionRows); let csv = 'Field Name,Value,Status\n'; displayOrder.forEach(item => { const rowObj = rowLookup[item.fieldName], rawValue = rowObj?.value ?? '', status = rowObj?.status || '', value = (typeof rawValue === 'string') ? rawValue.trim() : (rawValue ?? ''); csv += '"'+item.fieldName.replace(/"/g, '""')+'","'+String(value).replace(/"/g, '""')+'","'+String(status).replace(/"/g, '""')+'"\n'; }); downloadFile("plan_extraction.csv", "text/csv;charset=utf-8", csv); }
+  function handleExportPdf() { if (!ensureExtractionAvailable()) return; const displayOrder = parseDisplayOrder(displayOrderMD), rowLookup = buildRowLookup(lastExtractionRows); let pdfHtml = '<!DOCTYPE html><html><head><meta charset="utf-8"><title>Plan Extraction Report</title><style>body{font-family:"Segoe UI",sans-serif;font-size:11px;color:#1e293b;}table{width:100%;border-collapse:collapse;}th{background:#0b5fff;color:white;padding:10px;text-align:left;}td{padding:8px;border:1px solid #cbd5e1;}.section-header{background:#f1f5f9;color:#0b5fff;font-weight:700;border-left:4px solid #0b5fff;}</style></head><body><h1 style="color:#0b5fff;">Plan Extraction Report</h1><table><thead><tr><th>Field Name</th><th>Value</th></tr></thead><tbody>'; let currentGroup = null; displayOrder.forEach(item => { const rowObj = rowLookup[item.fieldName], rawValue = rowObj?.value ?? '', value = (typeof rawValue === 'string') ? rawValue.trim() : (rawValue ?? ''); if (item.group !== currentGroup) { currentGroup = item.group; pdfHtml += '<tr><td colspan="2" class="section-header">'+escapeHtml(currentGroup)+'</td></tr>'; } pdfHtml += '<tr><td>'+escapeHtml(item.fieldName)+'</td><td>'+escapeHtml(value)+'</td></tr>'; }); pdfHtml += '</tbody></table><p style="margin-top:20px;color:#64748b;font-size:10px;">Generated by Adopt(k) - Waivz.ai</p></body></html>'; const printWindow = window.open('', '_blank'); printWindow.document.write(pdfHtml); printWindow.document.close(); printWindow.focus(); setTimeout(() => printWindow.print(), 250); }
+  async function generateDPF() { if (!lastExtractionRows || lastExtractionRows.length === 0) { alert("No extraction data available. Please upload and process an adoption agreement PDF first."); return; } const companyRow = lastExtractionRows.find(r => r.label === "Company Name"), companyName = companyRow ? companyRow.value : "Plan"; const btn = qs('#export-nextstep-btn'), originalText = btn ? btn.innerHTML : ''; if (btn) { btn.innerHTML = "⏳ Generating DPF..."; btn.disabled = true; btn.style.opacity = "0.7"; } try { const response = await fetch(EXTRACTOR_API_BASE + '/fill-dpf', { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ rows: lastExtractionRows, company_name: companyName }) }); if (!response.ok) { const errorText = await response.text(); throw new Error(errorText || 'Server error: ' + response.status); } const blob = await response.blob(), safeCompany = companyName.replace(/[^a-zA-Z0-9\s\-_]/g, '').trim().replace(/\s+/g, '_').substring(0, 30), filename = 'DPF_'+safeCompany+'_'+new Date().toISOString().split('T')[0]+'.docx', url = URL.createObjectURL(blob), a = document.createElement('a'); a.href = url; a.download = filename; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url); alert('✅ DPF Generated Successfully!\n\nFilename: '+filename); } catch (error) { console.error("DPF generation failed:", error); alert('❌ Failed to generate DPF\n\n'+error.message); } finally { if (btn) { btn.innerHTML = originalText; btn.disabled = false; btn.style.opacity = "1"; } } }
+
+  async function initSystemEngineWithRuntimes() { try { await Promise.all([loadPdfJsIfNeeded(), loadPyodideRuntimeIfNeeded()]); } catch (err) { console.error(err); updateStatus("Runtime load failed", true, true); showError("Engine failed to load required runtimes: " + err.message); return; } await initSystemEngine(); }
+  async function initSystemEngine() { if (initializationInProgress) return; initializationInProgress = true; const errorBox = qs('#error-box'), retryBtn = qs('#retry-init-btn'), loader = qs('#py-loader'); if (errorBox) errorBox.classList.add('hidden'); if (retryBtn) retryBtn.classList.add('hidden'); if (loader) loader.classList.remove('hidden'); updateStatus("Step 1/3: Initializing PDF Reader..."); if (!window.pdfjsLib || typeof window.pdfjsLib.getDocument !== 'function') { updateStatus("Initialization Failed (Step 1)", true, true); showError("Step 1 Failed: PDF.js library failed to load."); return; } pdfjsLibInstance = window.pdfjsLib; updateStatus("Step 2/3: Loading Python Cleaning Utility..."); try { pyodideInstance = await window.loadPyodide({ indexURL: "https://cdn.jsdelivr.net/pyodide/v0.25.0/full/" }); await pyodideInstance.runPythonAsync("import sys"); } catch (err) { console.error(err); updateStatus("Initialization Failed (Step 2)", true, true); showError('Step 2 Failed: ' + err.message); return; } updateStatus("Step 3/3: Loading Cleaning Scripts..."); try { await pyodideInstance.runPythonAsync(sanitizeStringForPython(pythonCleaningScript)); } catch (err) { console.error(err); updateStatus("Initialization Failed (Step 3)", true, true); showError("Step 3 Failed: Error executing the cleaning script."); return; } updateStatus("Engine Ready", false, true); enableUpload(); initializationInProgress = false; }
+
+  function wireFileUpload() { const fileInput = qs('#file-upload'); if (!fileInput) return; fileInput.addEventListener('change', async (event) => { const file = event.target.files[0]; if (!file || file.type !== 'application/pdf') { alert("Please upload a valid PDF file."); return; } const fileInfo = qs('#file-info'), errorBox = qs('#error-box'); if (!pyodideInstance || !pdfjsLibInstance) { showError("Engine is not ready."); return; } if (errorBox) errorBox.classList.add('hidden'); updateStatus("Preparing Upload...", false, false); showOverlay("Processing selected PDF..."); if (fileInfo) { fileInfo.textContent = 'File: '+file.name+' | Size: '+(file.size / 1024).toFixed(1)+' KB'; fileInfo.classList.remove('hidden'); } const reader = new FileReader(); reader.onload = async (e) => { try { const typedarray = new Uint8Array(e.target.result); updateStatus("Extracting PDF Text...", false, false); showOverlay("Extracting text from PDF..."); const loadingTask = pdfjsLibInstance.getDocument({ data: typedarray }), pdf = await loadingTask.promise; let fullText = ""; for (let i = 1; i <= pdf.numPages; i++) { if (i % 20 === 0 || i === 1) updateStatus('Extracting Text (Page '+i+'/'+pdf.numPages+')...', false, false); const page = await pdf.getPage(i), textContent = await page.getTextContent(); fullText += textContent.items.map(item => item.str).join(' ') + "\n"; } updateStatus("Normalizing Text...", false, false); showOverlay("Normalizing extracted text..."); const cleanFunc = pyodideInstance.globals.get('clean_extracted_text'), cleanedText = cleanFunc(sanitizeStringForPython(fullText), true, false); updateStatus("Sending data to extractor…", false, false); showOverlay("Analyzing adoption agreement..."); const rows = await callExtractorBackend(cleanedText); renderData(rows); hideOverlay(); updateStatus("Analysis Complete", false, true); } catch (err) { console.error(err); updateStatus("Processing Error", true, true); showError("Error: " + err.message); hideOverlay(); } }; reader.onerror = () => { showError("Error reading file."); updateStatus("File Read Error", true, true); hideOverlay(); }; reader.readAsArrayBuffer(file); }); }
+
+  function wireButtons() {
+    const retryBtn = qs('#retry-init-btn'); if (retryBtn) retryBtn.addEventListener('click', initSystemEngineWithRuntimes);
+    const copyBtn = qs('#export-copy-btn'), htmlBtn = qs('#export-html-btn'), pdfBtn = qs('#export-pdf-btn'), csvBtn = qs('#export-csv-btn'), nextStepBtn = qs('#export-nextstep-btn');
+    if (copyBtn) copyBtn.addEventListener('click', handleExportCopy); if (htmlBtn) htmlBtn.addEventListener('click', handleExportHtml); if (pdfBtn) pdfBtn.addEventListener('click', handleExportPdf); if (csvBtn) csvBtn.addEventListener('click', handleExportCsv); if (nextStepBtn) nextStepBtn.addEventListener('click', generateDPF);
+    const helpBtn = qs('#help-btn'), helpModal = qs('#help-modal'), helpModalClose = qs('#help-modal-close'), helpModalClose2 = qs('#help-modal-close-2');
+    if (helpBtn) helpBtn.addEventListener('click', () => { if (helpModal) { helpModal.classList.remove('hidden'); helpModal.style.display = 'flex'; } });
+    if (helpModalClose) helpModalClose.addEventListener('click', () => { if (helpModal) { helpModal.classList.add('hidden'); helpModal.style.display = 'none'; } });
+    if (helpModalClose2) helpModalClose2.addEventListener('click', () => { if (helpModal) { helpModal.classList.add('hidden'); helpModal.style.display = 'none'; } });
+    if (helpModal) helpModal.addEventListener('click', (e) => { if (e.target.id === 'help-modal') { helpModal.classList.add('hidden'); helpModal.style.display = 'none'; } });
+    const evidenceModalClose = document.getElementById('evidence-modal-close'), evidenceCloseBtn = document.getElementById('evidence-close-btn'), evidenceModal = document.getElementById('evidence-modal');
+    if (evidenceModalClose) evidenceModalClose.addEventListener('click', window.closeEvidenceModal); if (evidenceCloseBtn) evidenceCloseBtn.addEventListener('click', window.closeEvidenceModal);
+    if (evidenceModal) evidenceModal.addEventListener('click', (e) => { if (e.target.id === 'evidence-modal') window.closeEvidenceModal(); });
+    const strictToggle = qs('#strict-mode-toggle'), reasonsToggle = qs('#show-reasons-toggle'), exportLabel = qs('#export-mode-label');
+    if (strictToggle) strictToggle.addEventListener('click', function() { STRICT_MODE = !STRICT_MODE; this.classList.toggle('active', STRICT_MODE); if (exportLabel) exportLabel.textContent = STRICT_MODE ? 'Certified values only' : 'All extracted values'; if (lastExtractionRows) renderData(lastExtractionRows); });
+    if (reasonsToggle) reasonsToggle.addEventListener('click', function() { SHOW_BLANK_REASONS = !SHOW_BLANK_REASONS; this.classList.toggle('active', SHOW_BLANK_REASONS); if (lastExtractionRows) renderData(lastExtractionRows); });
+  }
+
+  function init() { hideOverlay(); wireFileUpload(); wireButtons(); initSystemEngineWithRuntimes(); }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
 })();
 </script>
 </body>
