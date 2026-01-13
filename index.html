@@ -8,38 +8,21 @@
   <style>
     body { background: #0F172A; margin: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
     
-    /* Soft Orange Glow Pulse */
+    /* Soft Orange Glow Pulse - Applied to whole app */
     @keyframes orangeGlow {
       0% {
-        background: radial-gradient(ellipse at center, rgba(249, 115, 22, 0.25) 0%, rgba(249, 115, 22, 0.08) 30%, transparent 60%);
+        box-shadow: inset 0 0 150px 50px rgba(249, 115, 22, 0.15);
       }
       50% {
-        background: radial-gradient(ellipse at center, rgba(249, 115, 22, 0.12) 0%, rgba(249, 115, 22, 0.04) 50%, transparent 80%);
+        box-shadow: inset 0 0 250px 100px rgba(249, 115, 22, 0.08);
       }
       100% {
-        background: radial-gradient(ellipse at center, rgba(249, 115, 22, 0.25) 0%, rgba(249, 115, 22, 0.08) 30%, transparent 60%);
+        box-shadow: inset 0 0 150px 50px rgba(249, 115, 22, 0.15);
       }
     }
     
     .glow-container {
-      position: relative;
-    }
-    
-    .glow-container::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
       animation: orangeGlow 4s ease-in-out infinite;
-      pointer-events: none;
-      z-index: 0;
-    }
-    
-    .glow-container > * {
-      position: relative;
-      z-index: 1;
     }
     .loader-dark { width: 18px; height: 18px; border: 2px solid #334155; border-top-color: #0b5fff; border-radius: 50%; animation: spin 1s linear infinite; }
     @keyframes spin { to { transform: rotate(360deg); } }
@@ -244,11 +227,11 @@
         <h2 class="text-sm font-semibold text-[#0b5fff] uppercase tracking-wider mb-3">1. LLM Model</h2>
         <label for="llm-model" class="block text-sm font-medium text-white mb-2">Model (server-side)</label>
         <select id="llm-model" class="mt-1 block w-full px-3 py-2 bg-[#1E293B] border border-[#334155] rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#0b5fff]/50 focus:border-[#0b5fff] sm:text-sm text-white">
-          <option value="gpt-5.2" selected>GPT-5.2 (default)</option>
-          <option value="gemini-3-pro-preview">Gemini 3 Pro (Preview)</option>
-          <option value="claude-sonnet-4-5">Claude Sonnet 4.5</option>
+          <option value="gpt-5.2" selected>⭐ GPT-5.2 (Best Quality)</option>
+          <option value="claude-sonnet-4-5">⭐ Claude Sonnet 4.5 (Best Quality)</option>
+          <option value="gemini-3-pro-preview">⚡ Gemini 2.0 Flash (Faster, Less Accurate)</option>
         </select>
-        <p class="mt-1 text-xs text-[#94A3B8]">Select the model to use, or keep the default</p>
+        <p class="mt-1 text-xs text-[#94A3B8]">⭐ = Highest accuracy • ⚡ = Faster but may miss fields</p>
       </div>
       
       <div class="mb-6 pt-4 border-t border-[#334155]">
