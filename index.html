@@ -11,13 +11,13 @@
     /* Soft Orange Glow Pulse */
     @keyframes orangeGlow {
       0% {
-        background: radial-gradient(ellipse at center, rgba(249, 115, 22, 0.08) 0%, transparent 20%);
+        background: radial-gradient(ellipse at center, rgba(249, 115, 22, 0.25) 0%, rgba(249, 115, 22, 0.08) 30%, transparent 60%);
       }
       50% {
-        background: radial-gradient(ellipse at center, rgba(249, 115, 22, 0.04) 0%, rgba(249, 115, 22, 0.02) 40%, transparent 70%);
+        background: radial-gradient(ellipse at center, rgba(249, 115, 22, 0.12) 0%, rgba(249, 115, 22, 0.04) 50%, transparent 80%);
       }
       100% {
-        background: radial-gradient(ellipse at center, rgba(249, 115, 22, 0.08) 0%, transparent 20%);
+        background: radial-gradient(ellipse at center, rgba(249, 115, 22, 0.25) 0%, rgba(249, 115, 22, 0.08) 30%, transparent 60%);
       }
     }
     
@@ -697,9 +697,34 @@ Will a Recipient be entitled to request a Direct In-Plan Roth Rollover
   async function callExtractorBackend(cleanedText) {
     const modelSelect = qs('#llm-model'), model = modelSelect ? modelSelect.value : null;
     const payload = { document_text: cleanedText, vendor_hint: "Principal 401(k) Nonstandardized Adoption Agreement", model: model, display_order_md: displayOrderMD, strict_mode: true, return_evidence: true };
-    const resp = await fetch(`${EXTRACTOR_API_BASE}/extract-plan`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
-    if (!resp.ok) { const text = await resp.text(); throw new Error(`Extractor HTTP ${resp.status}: ${text.slice(0, 200)}...`); }
-    const data = await resp.json(); if (!data.rows || !Array.isArray(data.rows)) throw new Error("Missing rows[]"); return data.rows;
+    
+    // Add timeout for slow models (Gemini can be slow)
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 180000); // 3 minute timeout
+    
+    try {
+      const resp = await fetch(`${EXTRACTOR_API_BASE}/extract-plan`, { 
+        method: "POST", 
+        headers: { "Content-Type": "application/json" }, 
+        body: JSON.stringify(payload),
+        signal: controller.signal
+      });
+      clearTimeout(timeoutId);
+      
+      if (!resp.ok) { 
+        const text = await resp.text(); 
+        throw new Error(`Extractor HTTP ${resp.status}: ${text.slice(0, 200)}...`); 
+      }
+      const data = await resp.json(); 
+      if (!data.rows || !Array.isArray(data.rows)) throw new Error("Missing rows[]"); 
+      return data.rows;
+    } catch (err) {
+      clearTimeout(timeoutId);
+      if (err.name === 'AbortError') {
+        throw new Error(`Request timed out after 3 minutes. The ${model} model may be overloaded. Try GPT-5.2 instead.`);
+      }
+      throw err;
+    }
   }
 
   function ensureExtractionAvailable() { if (!lastExtractionRows || lastExtractionRows.length === 0) { alert("No extraction available. Run an extraction first."); return false; } return true; }
