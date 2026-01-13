@@ -101,6 +101,75 @@
     .dpf-category-icon { width: 48px; height: 48px; background: #0b5fff; border-radius: 0.5rem; display: flex; align-items: center; justify-content: center; margin: 0 auto 0.75rem; font-size: 1.25rem; }
     .dpf-category-title { color: white; font-weight: 600; font-size: 0.875rem; }
     .dpf-category-desc { color: #64748B; font-size: 0.75rem; margin-top: 0.25rem; }
+
+    /* Clock Spinner */
+    .clock-spinner {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #1E293B, #0F172A);
+      border: 3px solid #0b5fff;
+      position: relative;
+      box-shadow: 0 0 20px rgba(11, 95, 255, 0.3);
+    }
+    .clock-center {
+      position: absolute;
+      width: 8px;
+      height: 8px;
+      background: #0b5fff;
+      border-radius: 50%;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 3;
+    }
+    .clock-hand-hour {
+      position: absolute;
+      width: 3px;
+      height: 20px;
+      background: #0b5fff;
+      left: 50%;
+      bottom: 50%;
+      transform-origin: bottom center;
+      transform: translateX(-50%);
+      border-radius: 2px;
+      animation: spin-reverse 3s linear infinite;
+    }
+    .clock-hand-minute {
+      position: absolute;
+      width: 2px;
+      height: 28px;
+      background: #60A5FA;
+      left: 50%;
+      bottom: 50%;
+      transform-origin: bottom center;
+      transform: translateX(-50%);
+      border-radius: 2px;
+      animation: spin-reverse 1s linear infinite;
+    }
+    @keyframes spin-reverse {
+      from { transform: translateX(-50%) rotate(360deg); }
+      to { transform: translateX(-50%) rotate(0deg); }
+    }
+
+    /* Process Button */
+    .process-btn {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      background: #10b981;
+      color: white;
+      font-weight: 600;
+      border: none;
+      border-radius: 0.5rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+    .process-btn:hover { background: #059669; }
+    .process-btn:disabled { opacity: 0.5; cursor: not-allowed; }
   </style>
 </head>
 <body>
@@ -157,6 +226,17 @@
           </div>
           <input id="file-upload" type="file" class="hidden" accept=".pdf" />
         </label>
+        <div id="selected-file-info" class="hidden mt-3 p-3 bg-[#0F172A] border border-[#334155] rounded-lg">
+          <div class="flex items-center justify-between mb-2">
+            <span id="selected-file-name" class="text-sm text-white font-medium truncate"></span>
+            <button id="clear-file-btn" class="text-xs text-[#94A3B8] hover:text-red-400 transition">✕ Clear</button>
+          </div>
+          <div id="selected-file-size" class="text-xs text-[#64748B] mb-3"></div>
+          <button id="process-btn" class="process-btn">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+            Click to Process Document
+          </button>
+        </div>
       </div>
       
       <div class="mb-6 pt-4 border-t border-[#334155]">
@@ -198,7 +278,11 @@
           <p class="text-[#94A3B8] text-center py-20">Waiting for PDF upload and analysis...</p>
         </div>
         <div id="results-loading-overlay" class="results-overlay hidden">
-          <div class="loader-dark" style="width: 48px; height: 48px; border-width: 4px;"></div>
+          <div class="clock-spinner">
+            <div class="clock-center"></div>
+            <div class="clock-hand-hour"></div>
+            <div class="clock-hand-minute"></div>
+          </div>
           <div class="results-overlay-text">Analyzing adoption agreement...</div>
           <div class="results-overlay-subtext">⏪ Saving you hours of manual data entry</div>
         </div>
@@ -612,33 +696,111 @@ Will a Recipient be entitled to request a Direct In-Plan Roth Rollover
     updateStatus("Engine Ready", false, true); enableUpload(); initializationInProgress = false;
   }
 
+  let selectedFile = null;
+
   function wireFileUpload() {
     const fi = qs('#file-upload'); if (!fi) return;
-    fi.addEventListener('change', async (event) => {
-      const file = event.target.files[0]; if (!file || file.type !== 'application/pdf') { alert("Please upload a valid PDF file."); return; }
-      const fileInfo = qs('#file-info'), errorBox = qs('#error-box');
-      if (!pyodideInstance || !pdfjsLibInstance) { showError("Engine not ready."); return; }
-      if (errorBox) errorBox.classList.add('hidden');
-      updateStatus("Preparing Upload...", false, false); showOverlay("Processing PDF...");
-      if (fileInfo) { fileInfo.textContent = `File: ${file.name} | Size: ${(file.size / 1024).toFixed(1)} KB`; fileInfo.classList.remove('hidden'); }
-      const reader = new FileReader();
-      reader.onload = async (e) => {
-        try {
-          const typedarray = new Uint8Array(e.target.result);
-          updateStatus("Extracting PDF Text...", false, false);
-          const loadingTask = pdfjsLibInstance.getDocument({ data: typedarray }), pdf = await loadingTask.promise;
-          let fullText = "";
-          for (let i = 1; i <= pdf.numPages; i++) { if (i % 20 === 0 || i === 1) updateStatus(`Extracting (Page ${i}/${pdf.numPages})...`, false, false); const page = await pdf.getPage(i), tc = await page.getTextContent(); fullText += tc.items.map(item => item.str).join(' ') + "\n"; }
-          updateStatus("Normalizing Text...", false, false);
-          const cleanFunc = pyodideInstance.globals.get('clean_extracted_text'), cleanedText = cleanFunc(fullText.replace(/\0/g, ''), true, false);
-          updateStatus("Sending to extractor…", false, false);
-          const rows = await callExtractorBackend(cleanedText);
-          renderData(rows); hideOverlay(); updateStatus("Analysis Complete", false, true);
-        } catch (err) { console.error(err); updateStatus("Processing Error", true, true); showError("Error: " + err.message); hideOverlay(); }
-      };
-      reader.onerror = () => { showError("Error reading file."); updateStatus("File Read Error", true, true); hideOverlay(); };
-      reader.readAsArrayBuffer(file);
+    
+    // Step 1: File selection - just show info, don't process
+    fi.addEventListener('change', (event) => {
+      const file = event.target.files[0]; 
+      if (!file || file.type !== 'application/pdf') { 
+        alert("Please upload a valid PDF file."); 
+        return; 
+      }
+      
+      selectedFile = file;
+      
+      // Show file info and process button
+      const fileInfoPanel = qs('#selected-file-info');
+      const fileName = qs('#selected-file-name');
+      const fileSize = qs('#selected-file-size');
+      
+      if (fileInfoPanel) fileInfoPanel.classList.remove('hidden');
+      if (fileName) fileName.textContent = file.name;
+      if (fileSize) fileSize.textContent = `Size: ${(file.size / 1024).toFixed(1)} KB`;
+      
+      updateStatus("File selected. Click 'Process' when ready.", false, true);
     });
+    
+    // Clear file button
+    const clearBtn = qs('#clear-file-btn');
+    if (clearBtn) {
+      clearBtn.addEventListener('click', () => {
+        selectedFile = null;
+        const fi = qs('#file-upload');
+        if (fi) fi.value = '';
+        const fileInfoPanel = qs('#selected-file-info');
+        if (fileInfoPanel) fileInfoPanel.classList.add('hidden');
+        updateStatus("Engine Ready", false, true);
+      });
+    }
+    
+    // Step 2: Process button - actually process the file
+    const processBtn = qs('#process-btn');
+    if (processBtn) {
+      processBtn.addEventListener('click', async () => {
+        if (!selectedFile) { alert("Please select a file first."); return; }
+        if (!pyodideInstance || !pdfjsLibInstance) { showError("Engine not ready."); return; }
+        
+        const errorBox = qs('#error-box');
+        if (errorBox) errorBox.classList.add('hidden');
+        
+        // Disable process button and show processing state
+        processBtn.disabled = true;
+        processBtn.innerHTML = '<span class="loader-dark" style="width:18px;height:18px;border-width:2px;"></span> Processing...';
+        
+        showOverlay();
+        updateStatus("Reading PDF file...", false, false);
+        
+        const reader = new FileReader();
+        reader.onload = async (e) => {
+          try {
+            const typedarray = new Uint8Array(e.target.result);
+            updateStatus("Extracting PDF Text...", false, false);
+            const loadingTask = pdfjsLibInstance.getDocument({ data: typedarray }), pdf = await loadingTask.promise;
+            let fullText = "";
+            for (let i = 1; i <= pdf.numPages; i++) { 
+              if (i % 20 === 0 || i === 1) updateStatus(`Extracting (Page ${i}/${pdf.numPages})...`, false, false); 
+              const page = await pdf.getPage(i), tc = await page.getTextContent(); 
+              fullText += tc.items.map(item => item.str).join(' ') + "\n"; 
+            }
+            updateStatus("Normalizing Text...", false, false);
+            const cleanFunc = pyodideInstance.globals.get('clean_extracted_text'), cleanedText = cleanFunc(fullText.replace(/\0/g, ''), true, false);
+            updateStatus("Analyzing with AI...", false, false);
+            const rows = await callExtractorBackend(cleanedText);
+            renderData(rows); 
+            hideOverlay(); 
+            updateStatus("Analysis Complete", false, true);
+            
+            // Reset for next file
+            selectedFile = null;
+            const fileInfoPanel = qs('#selected-file-info');
+            if (fileInfoPanel) fileInfoPanel.classList.add('hidden');
+            const fileInput = qs('#file-upload');
+            if (fileInput) fileInput.value = '';
+            
+          } catch (err) { 
+            console.error(err); 
+            updateStatus("Processing Error", true, true); 
+            showError("Error: " + err.message); 
+            hideOverlay(); 
+          } finally {
+            // Re-enable process button
+            processBtn.disabled = false;
+            processBtn.innerHTML = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg> Click to Process Document';
+          }
+        };
+        reader.onerror = () => { 
+          showError("Error reading file."); 
+          updateStatus("File Read Error", true, true); 
+          hideOverlay(); 
+          processBtn.disabled = false;
+          processBtn.innerHTML = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg> Click to Process Document';
+        };
+        reader.readAsArrayBuffer(selectedFile);
+      });
+    }
   }
 
   function wireButtons() {
