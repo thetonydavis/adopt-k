@@ -302,49 +302,18 @@
   // ---------- Python cleaning script ----------
   const pythonCleaningScript = `
 import re
-import json
-DEFAULT_REPLACEMENTS = {
-    "checkbox_selected": [("☑", "[X]"), ("☑", "[X]"), ("🗹", "[X]"), ("[x ]", "[X]"), ("[ X ]", "[X]"), ("[x]", "[X]"), ("[X]", "[X]"), ("\\\\uf0be", "[X]"), ("\\\\uf058", "[X]"), ("\\\\uf052", "[X]"), ("(x)", "[X]")],
-    "checkbox_unselected": [("☐", "[ ]"), ("◻", "[ ]"), ("▢", "[ ]"), ("[ ]", "[ ]"), ("\\\\uf0a8", "[ ]"), ("()", "[ ]")],
-    "punctuation": [(""", '"'), (""", '"'), ("'", "'"), ("'", "'"), ("–", "-"), ("—", "-"), ("−", "-")],
-    "whitespace": [("\\\\u00a0", " "), ("\\\\u202f", " "), ("\\\\u2009", " "), ("\\\\r\\\\n", "\\\\n"), ("\\\\r", "\\\\n")],
-    "bullets": [("\\\\u2022", "•"), ("•", "•")],
-    "misc": [("\\\\ufeff", "")]
-}
-CONTROL_CHARS_RE = re.compile(r"[\\\\x01-\\\\x08\\\\x0b\\\\x0c\\\\x0e-\\\\x1f]")
-def build_replacements(profile=None):
-    prof = profile or DEFAULT_REPLACEMENTS
-    order = []
-    for key in ["checkbox_selected", "checkbox_unselected", "punctuation", "whitespace", "bullets", "misc"]:
-        order.extend(prof.get(key, []))
-    return order
-REPLACEMENTS_CACHE = build_replacements()
-def replace_special_chars(text):
-    if not text: return text
-    for src, dst in REPLACEMENTS_CACHE:
-        text = text.replace(src, dst)
-    return text
 def clean_extracted_text(text, collapse_internal_spaces=True, preserve_indent=False):
     if not text: return text
-    text = replace_special_chars(text)
-    text = CONTROL_CHARS_RE.sub("", text)
-    lines = text.split("\\\\n")
+    text = text.replace('\\r\\n', '\\n').replace('\\r', '\\n')
+    lines = text.split('\\n')
     cleaned_lines = []
     for line in lines:
-        if preserve_indent:
-            m = re.match(r"^([ \\\\t]*)(.*)$", line)
-            if m:
-                lead, body = m.group(1), m.group(2)
-                if collapse_internal_spaces: body = re.sub(r"[ \\\\t]{2,}", " ", body)
-                cleaned_lines.append(lead + body.rstrip())
-            else:
-                cleaned_lines.append(line.rstrip())
-        else:
-            s = line.strip()
-            if collapse_internal_spaces: s = re.sub(r"[ \\\\t]{2,}", " ", s)
-            cleaned_lines.append(s)
-    text = "\\\\n".join(cleaned_lines)
-    text = re.sub(r'\\\\n{3,}', '\\\\n\\\\n', text)
+        s = line.strip()
+        if collapse_internal_spaces:
+            s = re.sub(r'[ \\t]{2,}', ' ', s)
+        cleaned_lines.append(s)
+    text = '\\n'.join(cleaned_lines)
+    text = re.sub(r'\\n{3,}', '\\n\\n', text)
     return text
 `;
 
