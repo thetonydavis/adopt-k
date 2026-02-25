@@ -7,23 +7,8 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     body { background: #0F172A; margin: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
-    
-    /* Soft Orange Glow Pulse - Applied to whole app */
-    @keyframes orangeGlow {
-      0% {
-        box-shadow: inset 0 0 150px 50px rgba(249, 115, 22, 0.15);
-      }
-      50% {
-        box-shadow: inset 0 0 250px 100px rgba(249, 115, 22, 0.08);
-      }
-      100% {
-        box-shadow: inset 0 0 150px 50px rgba(249, 115, 22, 0.15);
-      }
-    }
-    
-    .glow-container {
-      animation: orangeGlow 4s ease-in-out infinite;
-    }
+    @keyframes orangeGlow { 0% { box-shadow: inset 0 0 150px 50px rgba(249, 115, 22, 0.15); } 50% { box-shadow: inset 0 0 250px 100px rgba(249, 115, 22, 0.08); } 100% { box-shadow: inset 0 0 150px 50px rgba(249, 115, 22, 0.15); } }
+    .glow-container { animation: orangeGlow 4s ease-in-out infinite; }
     .loader-dark { width: 18px; height: 18px; border: 2px solid #334155; border-top-color: #0b5fff; border-radius: 50%; animation: spin 1s linear infinite; }
     @keyframes spin { to { transform: rotate(360deg); } }
     .upload-area-dark { border: 2px dashed #334155; background: #1E293B; transition: all 0.2s; }
@@ -39,8 +24,6 @@
     .results-overlay-text { color: white; font-size: 1.125rem; font-weight: 600; margin-top: 1.5rem; }
     .results-overlay-subtext { color: #94A3B8; font-size: 0.875rem; margin-top: 0.5rem; }
     .hidden { display: none !important; }
-    
-    /* Navigation Buttons */
     .nav-btn { display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; background: #0b5fff; border: none; border-radius: 0.5rem; cursor: pointer; transition: all 0.2s; text-align: left; }
     .nav-btn:hover { background: #0047cc; }
     .nav-btn-icon { width: 36px; height: 36px; background: rgba(255,255,255,0.2); border-radius: 0.375rem; display: flex; align-items: center; justify-content: center; color: white; }
@@ -48,38 +31,19 @@
     .nav-btn-title { color: white; font-weight: 600; font-size: 0.875rem; }
     .nav-btn-subtitle { color: rgba(255,255,255,0.7); font-size: 0.75rem; }
     .nav-btn-badge { background: #10b981; color: white; font-size: 0.625rem; font-weight: 700; padding: 0.125rem 0.5rem; border-radius: 9999px; text-transform: uppercase; }
-
-    /* Toggle Switch */
-    .toggle-switch { position: relative; width: 44px; height: 24px; background: #334155; border-radius: 9999px; cursor: pointer; transition: background 0.2s; flex-shrink: 0; }
-    .toggle-switch.active { background: #0b5fff; }
-    .toggle-switch::after { content: ''; position: absolute; top: 2px; left: 2px; width: 20px; height: 20px; background: white; border-radius: 50%; transition: transform 0.2s; }
-    .toggle-switch.active::after { transform: translateX(20px); }
-
-    /* Coverage Bar */
     .coverage-bar { display: flex; gap: 1rem; padding: 0.75rem 1rem; background: #1E293B; border-radius: 0.5rem; margin-bottom: 1rem; }
     .coverage-pill { display: flex; align-items: center; gap: 0.5rem; padding: 0.375rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; }
     .coverage-pill.certified { background: rgba(16, 185, 129, 0.2); color: #10b981; }
     .coverage-pill.review { background: rgba(245, 158, 11, 0.2); color: #f59e0b; }
     .coverage-pill.silent { background: rgba(100, 116, 139, 0.2); color: #94A3B8; }
-
-    /* Status Badges */
     .status-badge { display: inline-block; padding: 0.125rem 0.5rem; border-radius: 0.25rem; font-size: 0.625rem; font-weight: 700; text-transform: uppercase; }
     .status-badge.certified { background: rgba(16, 185, 129, 0.2); color: #10b981; }
     .status-badge.ambiguous { background: rgba(245, 158, 11, 0.2); color: #f59e0b; }
     .status-badge.conflict { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
     .status-badge.silent { background: rgba(100, 116, 139, 0.2); color: #64748B; }
     .status-badge.uncertain { background: rgba(139, 92, 246, 0.2); color: #8b5cf6; }
-
-    /* OCR Badge */
-    .ocr-badge { display: inline-flex; align-items: center; gap: 0.25rem; padding: 0.125rem 0.5rem; border-radius: 9999px; font-size: 0.625rem; font-weight: 600; }
-    .ocr-badge.active { background: rgba(16, 185, 129, 0.2); color: #10b981; }
-    .ocr-badge.inactive { background: rgba(100, 116, 139, 0.2); color: #64748B; }
-
-    /* Source Button */
     .source-btn { background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.6875rem; font-weight: 600; cursor: pointer; transition: all 0.15s; white-space: nowrap; }
     .source-btn:hover { background: rgba(16, 185, 129, 0.25); border-color: #10b981; }
-
-    /* Modal Styles */
     .modal-backdrop { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.75); display: flex; align-items: center; justify-content: center; z-index: 50; padding: 1rem; }
     .modal-container { background: #1E293B; border-radius: 0.75rem; max-width: 600px; width: 100%; max-height: 90vh; overflow: hidden; display: flex; flex-direction: column; border: 1px solid #334155; }
     .modal-header { background: linear-gradient(135deg, #0b5fff 0%, #0047cc 100%); padding: 1rem 1.5rem; display: flex; justify-content: space-between; align-items: center; }
@@ -90,96 +54,25 @@
     .modal-body h4 { color: #0b5fff; font-size: 1rem; font-weight: 600; margin: 1.25rem 0 0.75rem 0; }
     .modal-body h4:first-child { margin-top: 0; }
     .modal-body p { margin: 0.5rem 0; line-height: 1.6; color: #94A3B8; }
-    .modal-body ul { margin: 0.5rem 0; padding-left: 1.5rem; color: #94A3B8; }
-    .modal-body li { margin: 0.375rem 0; }
     .modal-footer { padding: 1rem 1.5rem; border-top: 1px solid #334155; display: flex; justify-content: flex-end; gap: 0.75rem; }
     .modal-btn-primary { background: #0b5fff; color: white; border: none; padding: 0.5rem 1rem; border-radius: 0.375rem; font-weight: 500; cursor: pointer; transition: background 0.2s; }
     .modal-btn-primary:hover { background: #0047cc; }
-    .modal-btn-secondary { background: transparent; color: #94A3B8; border: 1px solid #334155; padding: 0.5rem 1rem; border-radius: 0.375rem; font-weight: 500; cursor: pointer; transition: all 0.2s; }
-    .modal-btn-secondary:hover { background: #334155; color: white; }
     .highlight-box { background: rgba(11, 95, 255, 0.1); border: 1px solid rgba(11, 95, 255, 0.3); border-radius: 0.5rem; padding: 1rem; margin: 1rem 0; }
     .highlight-box strong { color: #0b5fff; }
     .tip-box { background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 0.5rem; padding: 1rem; margin: 1rem 0; }
     .tip-box strong { color: #10b981; }
-
-    /* Evidence Card */
     .evidence-card { background: #0F172A; border: 1px solid #334155; border-radius: 0.5rem; padding: 1rem; margin-bottom: 0.75rem; }
     .evidence-meta { font-size: 0.75rem; color: #64748B; margin-bottom: 0.5rem; }
     .evidence-quote { color: #E2E8F0; font-style: italic; line-height: 1.6; border-left: 3px solid #10b981; padding-left: 0.75rem; }
-
-    /* Status Grid */
-    .status-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem; margin: 1rem 0; }
-    .status-explain-card { background: #0F172A; border: 1px solid #334155; border-radius: 0.5rem; padding: 0.75rem; }
-    .status-explain-card .status-text { font-size: 0.75rem; color: #94A3B8; margin-top: 0.5rem; }
-
-    /* Clock Spinner */
-    .clock-spinner {
-      width: 80px;
-      height: 80px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, #1E293B, #0F172A);
-      border: 3px solid #0b5fff;
-      position: relative;
-      box-shadow: 0 0 20px rgba(11, 95, 255, 0.3);
-    }
-    .clock-center {
-      position: absolute;
-      width: 8px;
-      height: 8px;
-      background: #0b5fff;
-      border-radius: 50%;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      z-index: 3;
-    }
-    .clock-hand-hour {
-      position: absolute;
-      width: 3px;
-      height: 20px;
-      background: #0b5fff;
-      left: 50%;
-      bottom: 50%;
-      transform-origin: bottom center;
-      transform: translateX(-50%);
-      border-radius: 2px;
-      animation: spin-reverse 3s linear infinite;
-    }
-    .clock-hand-minute {
-      position: absolute;
-      width: 2px;
-      height: 28px;
-      background: #60A5FA;
-      left: 50%;
-      bottom: 50%;
-      transform-origin: bottom center;
-      transform: translateX(-50%);
-      border-radius: 2px;
-      animation: spin-reverse 1s linear infinite;
-    }
-    @keyframes spin-reverse {
-      from { transform: translateX(-50%) rotate(360deg); }
-      to { transform: translateX(-50%) rotate(0deg); }
-    }
-
-    /* Process Button */
-    .process-btn {
-      width: 100%;
-      padding: 0.75rem 1rem;
-      background: #10b981;
-      color: white;
-      font-weight: 600;
-      border: none;
-      border-radius: 0.5rem;
-      cursor: pointer;
-      transition: all 0.2s;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0.5rem;
-    }
+    .clock-spinner { width: 80px; height: 80px; border-radius: 50%; background: linear-gradient(135deg, #1E293B, #0F172A); border: 3px solid #0b5fff; position: relative; box-shadow: 0 0 20px rgba(11, 95, 255, 0.3); }
+    .clock-center { position: absolute; width: 8px; height: 8px; background: #0b5fff; border-radius: 50%; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 3; }
+    .clock-hand-hour { position: absolute; width: 3px; height: 20px; background: #0b5fff; left: 50%; bottom: 50%; transform-origin: bottom center; transform: translateX(-50%); border-radius: 2px; animation: spin-reverse 3s linear infinite; }
+    .clock-hand-minute { position: absolute; width: 2px; height: 28px; background: #60A5FA; left: 50%; bottom: 50%; transform-origin: bottom center; transform: translateX(-50%); border-radius: 2px; animation: spin-reverse 1s linear infinite; }
+    @keyframes spin-reverse { from { transform: translateX(-50%) rotate(360deg); } to { transform: translateX(-50%) rotate(0deg); } }
+    .process-btn { width: 100%; padding: 0.75rem 1rem; background: #10b981; color: white; font-weight: 600; border: none; border-radius: 0.5rem; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 0.5rem; }
     .process-btn:hover { background: #059669; }
     .process-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .vision-badge { display: inline-flex; align-items: center; gap: 0.25rem; padding: 0.125rem 0.5rem; border-radius: 9999px; font-size: 0.625rem; font-weight: 600; background: rgba(139, 92, 246, 0.2); color: #a78bfa; }
   </style>
 </head>
 <body>
@@ -190,48 +83,35 @@
         <h1 class="text-4xl font-bold text-white tracking-tight leading-none -mt-1">Adopt<span class="ml-0.5 text-[#0b5fff]">(k)</span></h1>
       </div>
       <p class="text-sm text-[#94A3B8] mt-2">Adoption Agreement Parser</p>
-      
       <div class="mt-4 space-y-2">
         <button id="how-to-use-btn" class="nav-btn w-full">
-          <div class="nav-btn-icon">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
-          </div>
-          <div class="nav-btn-content">
-            <div class="nav-btn-title">How to Use</div>
-            <div class="nav-btn-subtitle">Step-by-step guide</div>
-          </div>
+          <div class="nav-btn-icon"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg></div>
+          <div class="nav-btn-content"><div class="nav-btn-title">How to Use</div><div class="nav-btn-subtitle">Step-by-step guide</div></div>
           <svg class="w-5 h-5 text-white/50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
         </button>
         <button id="whats-new-btn" class="nav-btn w-full">
-          <div class="nav-btn-icon">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
-          </div>
-          <div class="nav-btn-content">
-            <div class="nav-btn-title">What's New</div>
-            <div class="nav-btn-subtitle">CloudConvert OCR</div>
-          </div>
+          <div class="nav-btn-icon"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg></div>
+          <div class="nav-btn-content"><div class="nav-btn-title">What's New</div><div class="nav-btn-subtitle">Vision Mode v2.1</div></div>
           <span class="nav-btn-badge">NEW</span>
         </button>
       </div>
     </div>
-    
     <div class="p-6 flex-1 overflow-y-auto">
       <div class="mb-6">
         <h2 class="text-sm font-semibold text-[#0b5fff] uppercase tracking-wider mb-3">1. LLM Model</h2>
         <label for="llm-model" class="block text-sm font-medium text-white mb-2">Model (server-side)</label>
         <select id="llm-model" class="mt-1 block w-full px-3 py-2 bg-[#1E293B] border border-[#334155] rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#0b5fff]/50 focus:border-[#0b5fff] sm:text-sm text-white">
-          <option value="gpt-5.2" selected>⭐ GPT-5.2 (Best Quality)</option>
-          <option value="claude-sonnet-4-5">⭐ Claude Sonnet 4.5 (Best Quality)</option>
-          <option value="gemini-3-pro-preview">⚡ Gemini 2.0 Flash (Faster, Less Accurate)</option>
+          <option value="claude-sonnet-4-5" selected>👁️ Claude Sonnet 4.5 (Vision - Best)</option>
+          <option value="gpt-5.2">⭐ GPT-5.2 (Text Mode)</option>
+          <option value="gemini-3-pro-preview">👁️ Gemini 2.0 Flash (Vision)</option>
         </select>
-        <p class="mt-1 text-xs text-[#94A3B8]">⭐ = Highest accuracy • ⚡ = Faster but may miss fields</p>
+        <p class="mt-1 text-xs text-[#94A3B8]">👁️ = Vision mode (sees checkboxes visually)</p>
       </div>
-      
       <div class="mb-6 pt-4 border-t border-[#334155]">
         <h2 class="text-sm font-semibold text-[#0b5fff] uppercase tracking-wider mb-3">2. Select Adoption Agreement</h2>
-        <label id="upload-label" class="upload-area-dark flex flex-col items-center justify-center w-full h-32 rounded-lg cursor-pointer opacity-50 pointer-events-none">
+        <label id="upload-label" class="upload-area-dark flex flex-col items-center justify-center w-full h-32 rounded-lg cursor-pointer enabled">
           <div class="flex flex-col items-center justify-center pt-5 pb-6">
-            <svg id="upload-icon" class="w-8 h-8 mb-3 text-[#64748B]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
+            <svg id="upload-icon" class="w-8 h-8 mb-3 text-[#0b5fff]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
             <p class="text-sm text-[#94A3B8]"><span class="font-semibold" id="upload-text">Click to select PDF</span></p>
           </div>
           <input id="file-upload" type="file" class="hidden" accept=".pdf" />
@@ -248,25 +128,18 @@
           </button>
         </div>
       </div>
-      
       <div class="mb-6 pt-4 border-t border-[#334155]">
-        <h2 class="text-sm font-semibold text-[#0b5fff] uppercase tracking-wider mb-3">3. Status &amp; Processing</h2>
+        <h2 class="text-sm font-semibold text-[#0b5fff] uppercase tracking-wider mb-3">3. Status</h2>
         <div id="status-container" class="status-section-dark">
           <div id="status-msg" class="text-sm flex items-center gap-3">
-            <span class="loader-dark" id="py-loader"></span>
-            <span id="status-text" class="text-white">Initializing System...</span>
+            <span id="status-text" style="color: #6EE7B7;">Ready - Select a PDF to begin</span>
           </div>
-          <div id="ocr-status" class="mt-2 hidden">
-            <span id="ocr-badge" class="ocr-badge inactive">☁️ OCR: Checking...</span>
-          </div>
-          <div id="file-info" class="text-xs text-[#94A3B8] mt-3 hidden"></div>
+          <div id="vision-status" class="mt-2"><span class="vision-badge">👁️ Vision Mode Enabled</span></div>
         </div>
         <div id="error-box" class="hidden mt-3 p-3 bg-red-500/20 border border-red-400/30 rounded-lg text-xs text-red-200 break-words max-h-60 overflow-y-auto"></div>
-        <button id="retry-init-btn" class="hidden w-full mt-3 py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-[#0b5fff] hover:bg-[#0047cc]">Retry Initialization</button>
       </div>
-
       <div class="pt-4 border-t border-[#334155]">
-        <p class="text-xs text-[#64748B]"><strong class="text-[#94A3B8]">Trust Contract:</strong> If a value appears, it's certified correct. Empty fields mean we couldn't verify with certainty.</p>
+        <p class="text-xs text-[#64748B]"><strong class="text-[#94A3B8]">Vision Mode:</strong> The AI visually examines your PDF to see checkboxes directly, just like a human would.</p>
       </div>
     </div>
   </aside>
@@ -274,219 +147,88 @@
   <main class="flex-1 overflow-y-auto bg-[#0F172A] glow-container">
     <div class="p-8">
       <div id="results-header" class="bg-gradient-to-r from-[#0b5fff] to-[#0047cc] p-6 rounded-t-xl shadow-lg border border-[#1e4ec1] flex justify-between items-start">
-        <div>
-          <h2 class="text-2xl font-bold text-white">Plan Extraction Results</h2>
-          <p class="text-sm text-white/90 mt-1">Review the extracted data below. Certified values are verified from the source document.</p>
-        </div>
-        <div class="text-right">
-          <div class="text-xs text-white/70">Trust Level</div>
-          <div class="text-lg font-bold text-white">100% or Silent</div>
-        </div>
+        <div><h2 class="text-2xl font-bold text-white">Plan Extraction Results</h2><p class="text-sm text-white/90 mt-1">Review the extracted data below. Values are visually verified from the document.</p></div>
+        <div class="text-right"><div class="text-xs text-white/70">Extraction Mode</div><div class="text-lg font-bold text-white">👁️ Vision</div></div>
       </div>
-
       <div id="coverage-bar" class="coverage-bar hidden"></div>
-
       <div id="results-container" class="relative bg-[#1E293B] shadow-sm border-x border-b border-[#334155] rounded-b-xl">
-        <div id="results-table" class="overflow-x-auto">
-          <p class="text-[#94A3B8] text-center py-20">Waiting for PDF upload and analysis...</p>
-        </div>
+        <div id="results-table" class="overflow-x-auto"><p class="text-[#94A3B8] text-center py-20">Select a PDF and click Process to begin extraction...</p></div>
         <div id="results-loading-overlay" class="results-overlay hidden">
-          <div class="clock-spinner">
-            <div class="clock-center"></div>
-            <div class="clock-hand-hour"></div>
-            <div class="clock-hand-minute"></div>
-          </div>
-          <div class="results-overlay-text">Analyzing adoption agreement...</div>
-          <div class="results-overlay-subtext">⏪ Saving you hours of manual data entry</div>
+          <div class="clock-spinner"><div class="clock-center"></div><div class="clock-hand-hour"></div><div class="clock-hand-minute"></div></div>
+          <div class="results-overlay-text">Analyzing document with AI vision...</div>
+          <div class="results-overlay-subtext">👁️ Visually examining checkboxes and form fields</div>
         </div>
       </div>
-
       <div class="mt-4 bg-[#1E293B] rounded-xl shadow-sm border border-[#334155] overflow-hidden">
-        <div class="px-6 py-3 bg-gradient-to-r from-[#0b5fff] to-[#0047cc] flex items-center justify-between">
-          <h3 class="text-sm font-semibold text-white">Export Options</h3>
-          <span id="export-mode-label" class="text-xs text-white/90">Certified values only</span>
-        </div>
-        <div class="px-6 py-4">
-          <div class="flex flex-wrap gap-3">
-            <button id="export-copy-btn" class="px-4 py-2 text-sm font-medium rounded-md border border-[#0b5fff] text-[#0b5fff] bg-transparent hover:bg-[#0b5fff] hover:text-white transition">📋 Copy</button>
-            <button id="export-html-btn" class="px-4 py-2 text-sm font-medium rounded-md border border-[#0b5fff] text-[#0b5fff] bg-transparent hover:bg-[#0b5fff] hover:text-white transition">🌐 HTML Table</button>
-            <button id="export-pdf-btn" class="px-4 py-2 text-sm font-medium rounded-md border border-[#0b5fff] text-[#0b5fff] bg-transparent hover:bg-[#0b5fff] hover:text-white transition">📄 PDF Report</button>
-            <button id="export-csv-btn" class="px-4 py-2 text-sm font-medium rounded-md border border-[#0b5fff] text-[#0b5fff] bg-transparent hover:bg-[#0b5fff] hover:text-white transition">📊 CSV file</button>
-          </div>
-        </div>
+        <div class="px-6 py-3 bg-gradient-to-r from-[#0b5fff] to-[#0047cc] flex items-center justify-between"><h3 class="text-sm font-semibold text-white">Export Options</h3></div>
+        <div class="px-6 py-4"><div class="flex flex-wrap gap-3">
+          <button id="export-copy-btn" class="px-4 py-2 text-sm font-medium rounded-md border border-[#0b5fff] text-[#0b5fff] bg-transparent hover:bg-[#0b5fff] hover:text-white transition">📋 Copy</button>
+          <button id="export-html-btn" class="px-4 py-2 text-sm font-medium rounded-md border border-[#0b5fff] text-[#0b5fff] bg-transparent hover:bg-[#0b5fff] hover:text-white transition">🌐 HTML</button>
+          <button id="export-pdf-btn" class="px-4 py-2 text-sm font-medium rounded-md border border-[#0b5fff] text-[#0b5fff] bg-transparent hover:bg-[#0b5fff] hover:text-white transition">📄 PDF</button>
+          <button id="export-csv-btn" class="px-4 py-2 text-sm font-medium rounded-md border border-[#0b5fff] text-[#0b5fff] bg-transparent hover:bg-[#0b5fff] hover:text-white transition">📊 CSV</button>
+        </div></div>
       </div>
     </div>
 
-    <!-- HOW TO USE MODAL -->
+    <!-- MODALS -->
     <div id="help-modal" class="modal-backdrop hidden">
       <div class="modal-container">
-        <div class="modal-header">
-          <h3>📖 How to Use Adopt(k)</h3>
-          <button id="help-modal-close" class="modal-close">&times;</button>
-        </div>
+        <div class="modal-header"><h3>📖 How to Use</h3><button id="help-modal-close" class="modal-close">&times;</button></div>
         <div class="modal-body">
-          <h4>🎯 What is Adopt(k)?</h4>
-          <p>Adopt(k) is an AI-powered tool that automatically extracts key plan design information from 401(k) adoption agreements. Upload a PDF and get structured data in seconds—no manual data entry required.</p>
-          
-          <div class="highlight-box">
-            <strong>🔒 Trust Contract:</strong> If Adopt(k) returns a value, it's certified correct. You don't need to double-check. Empty fields mean we couldn't verify with 100% certainty.
-          </div>
-
-          <h4>📋 How to Extract Plan Data</h4>
-          <ul>
-            <li><strong>Step 1:</strong> Select your preferred LLM model (GPT-5.2 recommended)</li>
-            <li><strong>Step 2:</strong> Click the upload area and select your adoption agreement PDF</li>
-            <li><strong>Step 3:</strong> Wait for the extraction to complete</li>
-            <li><strong>Step 4:</strong> Review certified values and click "Source" to see evidence</li>
-          </ul>
-
-          <h4>✅ Understanding Status Badges</h4>
-          <div class="status-grid">
-            <div class="status-explain-card">
-              <span class="status-badge certified">CERTIFIED</span>
-              <div class="status-text">Value verified directly from document text. Safe to use without review.</div>
-            </div>
-            <div class="status-explain-card">
-              <span class="status-badge ambiguous">AMBIGUOUS</span>
-              <div class="status-text">Document uses unclear language like "may provide" or "at discretion".</div>
-            </div>
-            <div class="status-explain-card">
-              <span class="status-badge conflict">CONFLICT</span>
-              <div class="status-text">Multiple conflicting provisions found. Requires manual review.</div>
-            </div>
-            <div class="status-explain-card">
-              <span class="status-badge silent">SILENT</span>
-              <div class="status-text">Document doesn't address this provision at all.</div>
-            </div>
-          </div>
-
-          <div class="tip-box">
-            <strong>💡 Pro Tip:</strong> Click the "Source" button on any certified field to see the exact document text that supports the extracted value.
-          </div>
+          <h4>👁️ Vision Mode Extraction</h4>
+          <p>Adopt(k) v2.1 uses AI vision to actually SEE your PDF, just like ChatGPT does. The AI visually examines checkboxes instead of relying on text extraction.</p>
+          <div class="highlight-box"><strong>Why Vision?</strong> Text extraction often loses checkbox marks. Vision mode sees [✓] and [X] directly.</div>
+          <h4>Steps</h4>
+          <p>1. Select Claude Sonnet (best) or Gemini for vision mode</p>
+          <p>2. Upload your adoption agreement PDF</p>
+          <p>3. Click Process - the AI will visually analyze each page</p>
+          <p>4. Review results - Form of Business, Age Requirements, etc. now detected correctly</p>
         </div>
-        <div class="modal-footer">
-          <button id="help-modal-close-2" class="modal-btn-primary">Got it!</button>
-        </div>
+        <div class="modal-footer"><button id="help-modal-close-2" class="modal-btn-primary">Got it!</button></div>
       </div>
     </div>
-
-    <!-- WHAT'S NEW MODAL -->
     <div id="whats-new-modal" class="modal-backdrop hidden">
       <div class="modal-container">
-        <div class="modal-header" style="background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%);">
-          <h3>✨ What's New</h3>
-          <button id="whats-new-modal-close" class="modal-close">&times;</button>
-        </div>
+        <div class="modal-header" style="background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%);"><h3>✨ What's New in v2.1</h3><button id="whats-new-modal-close" class="modal-close">&times;</button></div>
         <div class="modal-body">
-          <h4>☁️ CloudConvert OCR Integration</h4>
-          <p>Adopt(k) now uses CloudConvert OCR for enhanced checkbox detection. Scanned PDFs and complex forms are now processed with better accuracy.</p>
-          
-          <div class="highlight-box">
-            <strong>Better Checkbox Detection:</strong> Previously, checkboxes were extracted at the end of each page. Now they stay inline with their labels for accurate field matching.
-          </div>
-
-          <h4>🔒 Certification System</h4>
-          <p>Every extracted value comes with a certification status. If Adopt(k) returns a value, you can trust it's correct—no double-checking needed.</p>
-
-          <h4>📋 Source Evidence</h4>
-          <p>Click the "Source" button on any certified field to see exactly where in the document we found that information, including page number and verbatim quote.</p>
-
-          <h4>📊 Coverage Bar</h4>
-          <p>The coverage bar shows at a glance how many fields were certified, need review, or are silent.</p>
-
-          <div class="tip-box">
-            <strong>Coming Soon:</strong> Batch processing, custom field mapping, and integration with your existing TPA workflows.
-          </div>
+          <h4>👁️ Vision Mode</h4>
+          <p>The AI now SEES your PDF visually, examining checkboxes just like a human would. No more lost checkbox marks!</p>
+          <div class="highlight-box"><strong>Fixed:</strong> Form of Business, Entity Type, Minimum Age, Service Requirement - all the checkbox fields now work correctly.</div>
+          <h4>How It Works</h4>
+          <p>Instead of extracting text (which loses checkboxes), we send the actual PDF to Claude/Gemini which can see the document visually.</p>
+          <div class="tip-box"><strong>Best Model:</strong> Claude Sonnet 4.5 has the best vision accuracy for adoption agreements.</div>
         </div>
-        <div class="modal-footer">
-          <button id="whats-new-close-btn" class="modal-btn-primary">Got it!</button>
-        </div>
+        <div class="modal-footer"><button id="whats-new-close-btn" class="modal-btn-primary">Got it!</button></div>
       </div>
     </div>
-
-    <!-- EVIDENCE MODAL -->
     <div id="evidence-modal" class="modal-backdrop hidden">
       <div class="modal-container" style="max-width: 600px;">
-        <div class="modal-header" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
-          <h3>📋 Source Evidence</h3>
-          <button id="evidence-modal-close" class="modal-close">&times;</button>
-        </div>
+        <div class="modal-header" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);"><h3>📋 Source Evidence</h3><button id="evidence-modal-close" class="modal-close">&times;</button></div>
         <div class="modal-body" id="evidence-body"></div>
-        <div class="modal-footer">
-          <button id="evidence-close-btn" class="modal-btn-primary">Close</button>
-        </div>
+        <div class="modal-footer"><button id="evidence-close-btn" class="modal-btn-primary">Close</button></div>
       </div>
     </div>
-
   </main>
 </div>
 
 <script>
 (function() {
   const EXTRACTOR_API_BASE = "https://adoptk-extractor-931273582090.us-west1.run.app";
-  const PARSEK_OCR_WORKER_URL = 'https://parsek-ocr-worker.tony-e07.workers.dev';
   
-  let pyodideInstance = null, pdfjsLibInstance = null, initializationInProgress = false;
   let lastExtractionRows = null, lastHtmlTableString = "", lastExtractionSource = "";
-  let STRICT_MODE = true, SHOW_BLANK_REASONS = true;
-  let ocrWorkerAvailable = false;
 
-  // ---------- OCR WORKER CLIENT ----------
-  async function checkOcrWorkerHealth() {
-    try {
-      const response = await fetch(`${PARSEK_OCR_WORKER_URL}/health`, { method: 'GET', cache: 'no-store' });
-      if (!response.ok) return false;
-      const result = await response.json();
-      return result.status === 'ok' && result.cloudconvert === 'configured';
-    } catch { return false; }
+  function qs(sel) { return document.querySelector('#docuwaivz-app ' + sel); }
+  function showOverlay() { const o = qs('#results-loading-overlay'); if (o) { o.classList.remove('hidden'); o.style.display = 'flex'; } }
+  function hideOverlay() { const o = qs('#results-loading-overlay'); if (o) { o.classList.add('hidden'); o.style.display = 'none'; } }
+  function updateStatus(text, isError = false) {
+    const st = qs('#status-text');
+    if (st) { st.innerText = text; st.style.color = isError ? '#FCA5A5' : '#6EE7B7'; }
   }
-
-  async function extractWithOcrWorker(pdfArrayBuffer, onProgress) {
-    onProgress('Uploading to CloudConvert OCR...');
-    const bytes = new Uint8Array(pdfArrayBuffer);
-    let binary = '';
-    const chunkSize = 32768;
-    for (let i = 0; i < bytes.length; i += chunkSize) {
-      const chunk = bytes.subarray(i, Math.min(i + chunkSize, bytes.length));
-      binary += String.fromCharCode.apply(null, chunk);
-    }
-    const pdfBase64 = btoa(binary);
-    
-    onProgress('Processing with CloudConvert OCR...');
-    const response = await fetch(`${PARSEK_OCR_WORKER_URL}/extract`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ pdf: pdfBase64 })
-    });
-    
-    const result = await response.json();
-    if (!result.success) throw new Error(result.error || 'OCR extraction failed');
-    
-    return { text: result.text, source: 'CloudConvert OCR', characters: result.characters };
+  function showError(msg) { 
+    const eb = qs('#error-box'); 
+    if (eb) { eb.innerHTML = '<strong>Error:</strong> ' + escapeHtml(msg); eb.classList.remove('hidden'); } 
   }
-
-  // ---------- RUNTIME LOADERS ----------
-  function loadPdfJsIfNeeded() {
-    return new Promise((resolve, reject) => {
-      if (window.pdfjsLib && typeof window.pdfjsLib.getDocument === 'function') { resolve(); return; }
-      let script = document.querySelector('script[data-docuwaivz-pdfjs]');
-      if (!script) { script = document.createElement('script'); script.src = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"; script.async = true; script.setAttribute('data-docuwaivz-pdfjs', '1'); document.head.appendChild(script); }
-      script.addEventListener('load', () => { window.pdfjsLib ? resolve() : reject(new Error("PDF.js not available")); }, { once: true });
-      script.addEventListener('error', () => reject(new Error("PDF.js failed")), { once: true });
-    });
-  }
-  
-  function loadPyodideRuntimeIfNeeded() {
-    return new Promise((resolve, reject) => {
-      if (window.loadPyodide) { resolve(); return; }
-      let script = document.querySelector('script[data-docuwaivz-pyodide]');
-      if (!script) { script = document.createElement('script'); script.src = "https://cdn.jsdelivr.net/pyodide/v0.25.0/full/pyodide.js"; script.async = true; script.setAttribute('data-docuwaivz-pyodide', '1'); document.head.appendChild(script); }
-      script.addEventListener('load', () => { window.loadPyodide ? resolve() : reject(new Error("Pyodide not available")); }, { once: true });
-      script.addEventListener('error', () => reject(new Error("Pyodide failed")), { once: true });
-    });
-  }
-
-  const pythonCleaningScript = "import re\ndef clean_extracted_text(text, collapse_internal_spaces=True, preserve_indent=False):\n    if not text: return text\n    text = text.replace(chr(13) + chr(10), chr(10)).replace(chr(13), chr(10))\n    lines = text.split(chr(10))\n    cleaned_lines = []\n    for line in lines:\n        s = line.strip()\n        if collapse_internal_spaces:\n            while '  ' in s:\n                s = s.replace('  ', ' ')\n        cleaned_lines.append(s)\n    text = chr(10).join(cleaned_lines)\n    while chr(10) + chr(10) + chr(10) in text:\n        text = text.replace(chr(10) + chr(10) + chr(10), chr(10) + chr(10))\n    return text";
+  function escapeHtml(s) { if (s == null) return ''; return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;"); }
 
   const displayOrderMD = `## Company Information
 Company Name
@@ -497,7 +239,6 @@ Company Telephone
 EIN
 Form of Business
 Entity Type
-
 ## Corporate Details
 Employer's Tax Year End
 Plan Year End
@@ -505,7 +246,6 @@ Related Employers
 Related Employers Detail
 Multiple Employer Plan
 Affiliated_Employers
-
 ## Plan Information
 Plan Name
 Original Effective Date
@@ -513,7 +253,6 @@ Restatement Effective Date
 Plan Number
 Type of Plan
 Plan Year
-
 ## Eligibility
 Eligible Employees
 Are Union Employees Excluded?
@@ -529,14 +268,12 @@ Entry Date
 Elapsed Time or Hours of Service
 Effective Date of Age/Service Requirement (Amnesty Date)
 Counting Predecessor Service
-
 ## Compensation
 Definition of Compensation
 Total Compensation
 Plan Compensation Exclusions
 Period for Determining Compensation
 Using Entry Date Compensation
-
 ## Contributions
 Employer Non-Elective/Profit Sharing Contribution
 Employer Non-Elective/Profit Sharing Contribution Formula
@@ -559,7 +296,6 @@ Limit on Matching Contribution
 Period for Determining Matching Contributions
 Matching Contribution Allocation Conditions
 Exceptions to Matching Contribution Allocation Conditions
-
 ## Safe Harbor
 Safe Harbor 401(k) Plan
 Is This a QACA Plan?
@@ -568,7 +304,6 @@ Safe Harbor Formula
 Period for Determining Safe Harbor Contribution
 Eligibility for Safe Harbor Contribution
 Safe Harbor Delayed Effective Date
-
 ## Vesting
 Normal Retirement Age
 Early Retirement Age
@@ -578,7 +313,6 @@ Vesting Schedule
 Vesting Exclusions
 Vesting for QACA
 Immediate Vesting Upon Death, Disability, ERA
-
 ## Distributions
 In-Service Distributions at Age 59.5
 Sources Available for In-Service Distributions at Age 59.5
@@ -587,33 +321,11 @@ Sources Available for Hardship Distributions
 Loans Allowed
 Number of Loans Allowed at a Time
 Loan Rate of Interest
-
 ## Administration
 Top Paid Group Applicable
 Owner/Trustee Name
 Trustee Title
-Will a Recipient be entitled to request a Direct In-Plan Roth Rollover
-`;
-
-  function qs(sel) { return document.querySelector('#docuwaivz-app ' + sel); }
-  function showOverlay(msg) { const o = qs('#results-loading-overlay'); if (o) { o.classList.remove('hidden'); o.style.display = 'flex'; } }
-  function hideOverlay() { const o = qs('#results-loading-overlay'); if (o) { o.classList.add('hidden'); o.style.display = 'none'; } }
-  function updateStatus(text, isError = false, hideLoader = false) {
-    const st = qs('#status-text'), ld = qs('#py-loader');
-    if (st) { st.innerText = text; st.style.color = isError ? '#FCA5A5' : (hideLoader ? '#6EE7B7' : 'white'); }
-    if (ld) { if (hideLoader || isError) ld.classList.add('hidden'); else ld.classList.remove('hidden'); }
-  }
-  function updateOcrBadge(active) {
-    const container = qs('#ocr-status'), badge = qs('#ocr-badge');
-    if (container) container.classList.remove('hidden');
-    if (badge) {
-      badge.className = active ? 'ocr-badge active' : 'ocr-badge inactive';
-      badge.textContent = active ? '☁️ OCR: Active' : '☁️ OCR: Unavailable';
-    }
-  }
-  function showError(msg) { const eb = qs('#error-box'), rb = qs('#retry-init-btn'); if (eb) { eb.innerHTML = '<strong>Error:</strong> ' + escapeHtml(msg); eb.classList.remove('hidden'); } if (rb && initializationInProgress) rb.classList.remove('hidden'); }
-  function enableUpload() { const ul = qs('#upload-label'), ui = qs('#upload-icon'); if (ul) { ul.classList.remove('opacity-50', 'pointer-events-none'); ul.classList.add('enabled'); } if (ui) { ui.classList.remove('text-[#64748B]'); ui.classList.add('text-[#0b5fff]'); } }
-  function escapeHtml(s) { if (s == null) return ''; return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;"); }
+Will a Recipient be entitled to request a Direct In-Plan Roth Rollover`;
 
   function parseDisplayOrder(md) { const lines = md.split('\n'), fields = []; let grp = null; lines.forEach(l => { l = l.trim(); if (!l) return; if (l.startsWith('##')) grp = l.replace(/^#+\s*/, '').trim(); else if (grp) fields.push({ group: grp, fieldName: l }); }); return fields; }
   function buildRowLookup(rows) { const lk = {}; rows.forEach(r => { if (r && typeof r.label === 'string') lk[r.label] = r; }); return lk; }
@@ -623,13 +335,13 @@ Will a Recipient be entitled to request a Direct In-Plan Roth Rollover
   function computeCoverage(rows, displayOrder) {
     const lk = buildRowLookup(rows); let cert = 0, rev = 0, sil = 0;
     displayOrder.forEach(item => { const r = lk[item.fieldName], st = (r?.status || '').toUpperCase(), v = r?.value || ''; if (st === 'CERTIFIED' || st === 'OK' || (v && !st)) cert++; else if (st === 'SILENT' || st === 'NOT_FOUND' || !v) sil++; else rev++; });
-    return { certified: cert, review: rev, silent: sil, total: displayOrder.length };
+    return { certified: cert, review: rev, silent: sil };
   }
   
   function renderCoverage(rows) {
     const bar = qs('#coverage-bar'); if (!bar) return;
     const c = computeCoverage(rows, parseDisplayOrder(displayOrderMD));
-    bar.innerHTML = `<div class="coverage-pill certified">✓ Certified: ${c.certified}</div><div class="coverage-pill review">⚠ Needs Review: ${c.review}</div><div class="coverage-pill silent">— Silent: ${c.silent}</div>`;
+    bar.innerHTML = `<div class="coverage-pill certified">✓ Certified: ${c.certified}</div><div class="coverage-pill review">⚠ Review: ${c.review}</div><div class="coverage-pill silent">— Silent: ${c.silent}</div>`;
     bar.classList.remove('hidden');
   }
 
@@ -639,9 +351,9 @@ Will a Recipient be entitled to request a Direct In-Plan Roth Rollover
     displayOrder.forEach(item => {
       const rowObj = rowLookup[item.fieldName], rawValue = rowObj?.value ?? '', status = rowObj?.status || '', reason = rowObj?.reason || '', evidence = Array.isArray(rowObj?.evidence) ? rowObj.evidence : [];
       const value = (typeof rawValue === 'string') ? rawValue.trim() : rawValue, certified = isCertified(status), statusClass = getStatusClass(status);
-      const showValue = STRICT_MODE ? (certified && value) : !!value, valueExists = showValue && value !== null && value !== undefined && value !== '';
+      const valueExists = value !== null && value !== undefined && value !== '';
       if (item.group !== currentGroup) { if (currentGroup !== null) html += '</tbody>'; currentGroup = item.group; html += `<tbody><tr class="section-header-row"><td colspan="2">${escapeHtml(currentGroup)}</td></tr>`; }
-      let statusBadge = ''; if (!certified && SHOW_BLANK_REASONS && status) { statusBadge = `<span class="status-badge ${statusClass}">${escapeHtml(status)}</span>`; if (reason) statusBadge += `<span style="margin-left: 0.5rem; font-size: 0.75rem; color: #94A3B8;">${escapeHtml(reason)}</span>`; }
+      let statusBadge = ''; if (!certified && status) { statusBadge = `<span class="status-badge ${statusClass}">${escapeHtml(status)}</span>`; if (reason) statusBadge += `<span style="margin-left: 0.5rem; font-size: 0.75rem; color: #94A3B8;">${escapeHtml(reason)}</span>`; }
       let sourceBtn = ''; if (certified && evidence.length > 0 && valueExists) { const evData = JSON.stringify({ field: item.fieldName, evidence: evidence }); sourceBtn = `<button class="source-btn" onclick='window.showEvidence(${JSON.stringify(evData)})'>Source</button>`; }
       html += `<tr class="data-row"><td class="field-cell">${escapeHtml(item.fieldName)}</td><td class="value-cell ${valueExists ? '' : 'empty-value'}"><div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 0.75rem;"><div style="flex: 1; min-width: 0;">${valueExists ? escapeHtml(value) : ''}${!valueExists && statusBadge ? `<div style="margin-top: 0.25rem;">${statusBadge}</div>` : ''}</div>${sourceBtn ? `<div style="flex-shrink: 0;">${sourceBtn}</div>` : ''}</div></td></tr>`;
     });
@@ -653,69 +365,48 @@ Will a Recipient be entitled to request a Direct In-Plan Roth Rollover
   window.showEvidence = function(dataStr) {
     try {
       const data = typeof dataStr === 'string' ? JSON.parse(dataStr) : dataStr, modal = document.getElementById('evidence-modal'), body = document.getElementById('evidence-body');
-      if (!modal || !body) return; const field = data.field || 'Field', evidence = Array.isArray(data.evidence) ? data.evidence : [];
-      body.innerHTML = `<div style="margin-bottom: 1rem;"><div style="font-size: 1.125rem; font-weight: 600; color: white;">${escapeHtml(field)}</div><div style="font-size: 0.875rem; color: #94A3B8;">Certified source excerpts from the document</div></div>${evidence.map(ev => `<div class="evidence-card"><div class="evidence-meta">${ev.page ? `Page ${escapeHtml(String(ev.page))}` : ''}${ev.section ? ` • Section ${escapeHtml(String(ev.section))}` : ''}</div><div class="evidence-quote">"${escapeHtml(ev.quote || '')}"</div></div>`).join('')}${evidence.length === 0 ? '<p style="color: #94A3B8;">No source evidence available.</p>' : ''}`;
+      if (!modal || !body) return;
+      body.innerHTML = `<div style="margin-bottom: 1rem;"><div style="font-size: 1.125rem; font-weight: 600; color: white;">${escapeHtml(data.field)}</div></div>${data.evidence.map(ev => `<div class="evidence-card"><div class="evidence-meta">${ev.page ? `Page ${ev.page}` : ''}</div><div class="evidence-quote">"${escapeHtml(ev.quote || '')}"</div></div>`).join('')}`;
       modal.classList.remove('hidden'); modal.style.display = 'flex';
-    } catch (e) { console.error('Failed to parse evidence:', e); }
+    } catch (e) { console.error(e); }
   };
   window.closeEvidenceModal = function() { const m = document.getElementById('evidence-modal'); if (m) { m.classList.add('hidden'); m.style.display = 'none'; } };
 
-  async function callExtractorBackend(cleanedText) {
-    const modelSelect = qs('#llm-model'), model = modelSelect ? modelSelect.value : null;
-    const payload = { document_text: cleanedText, vendor_hint: "Principal 401(k) Nonstandardized Adoption Agreement", model: model, display_order_md: displayOrderMD, strict_mode: true, return_evidence: true };
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 180000);
-    try {
-      const resp = await fetch(`${EXTRACTOR_API_BASE}/extract-plan`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload), signal: controller.signal });
-      clearTimeout(timeoutId);
-      if (!resp.ok) { const text = await resp.text(); throw new Error(`Extractor HTTP ${resp.status}: ${text.slice(0, 200)}...`); }
-      const data = await resp.json(); if (!data.rows || !Array.isArray(data.rows)) throw new Error("Missing rows[]"); return data.rows;
-    } catch (err) {
-      clearTimeout(timeoutId);
-      if (err.name === 'AbortError') throw new Error(`Request timed out after 3 minutes. The ${model} model may be overloaded. Try GPT-5.2 instead.`);
-      throw err;
+  // Convert ArrayBuffer to base64
+  function arrayBufferToBase64(buffer) {
+    const bytes = new Uint8Array(buffer);
+    let binary = '';
+    const chunkSize = 32768;
+    for (let i = 0; i < bytes.length; i += chunkSize) {
+      const chunk = bytes.subarray(i, Math.min(i + chunkSize, bytes.length));
+      binary += String.fromCharCode.apply(null, chunk);
     }
+    return btoa(binary);
   }
 
-  function ensureExtractionAvailable() { if (!lastExtractionRows || lastExtractionRows.length === 0) { alert("No extraction available. Run an extraction first."); return false; } return true; }
+  async function callExtractorBackend(pdfBase64, model) {
+    const payload = { pdf_base64: pdfBase64, model: model, strict_mode: true, return_evidence: true };
+    
+    const resp = await fetch(`${EXTRACTOR_API_BASE}/extract-plan`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+    
+    if (!resp.ok) {
+      const text = await resp.text();
+      throw new Error(`API error ${resp.status}: ${text.slice(0, 200)}`);
+    }
+    
+    return await resp.json();
+  }
+
+  function ensureExtractionAvailable() { if (!lastExtractionRows || lastExtractionRows.length === 0) { alert("No extraction available."); return false; } return true; }
   function downloadFile(name, type, content) { const blob = new Blob([content], { type }), url = URL.createObjectURL(blob), a = document.createElement('a'); a.href = url; a.download = name; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url); }
-  async function handleExportCopy() { if (!ensureExtractionAvailable()) return; try { await navigator.clipboard.writeText(lastHtmlTableString || buildHtmlTable(lastExtractionRows)); alert("Copied!"); } catch (e) { alert("Copy failed"); } }
-  function handleExportHtml() { if (!ensureExtractionAvailable()) return; downloadFile("plan_extraction.html", "text/html;charset=utf-8", `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Plan Extraction</title></head><body>${lastHtmlTableString || buildHtmlTable(lastExtractionRows)}</body></html>`); }
-  function handleExportCsv() { if (!ensureExtractionAvailable()) return; const displayOrder = parseDisplayOrder(displayOrderMD), rowLookup = buildRowLookup(lastExtractionRows); let csv = 'Field Name,Value,Status\n'; displayOrder.forEach(item => { const r = rowLookup[item.fieldName], v = r?.value ?? '', s = r?.status || ''; csv += `"${item.fieldName.replace(/"/g, '""')}","${String(v).replace(/"/g, '""')}","${String(s).replace(/"/g, '""')}"\n`; }); downloadFile("plan_extraction.csv", "text/csv;charset=utf-8", csv); }
-  function handleExportPdf() { if (!ensureExtractionAvailable()) return; const displayOrder = parseDisplayOrder(displayOrderMD), rowLookup = buildRowLookup(lastExtractionRows); let html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Plan Extraction Report</title><style>body{font-family:sans-serif;font-size:11px;}table{width:100%;border-collapse:collapse;}th{background:#0b5fff;color:white;padding:10px;text-align:left;}td{padding:8px;border:1px solid #cbd5e1;}.section{background:#f1f5f9;color:#0b5fff;font-weight:700;border-left:4px solid #0b5fff;}.extraction-source{background:#fef3c7;color:#92400e;padding:4px 8px;border-radius:4px;font-size:10px;display:inline-block;margin-top:5px;}</style></head><body><h1 style="color:#0b5fff;">Plan Extraction Report</h1>${lastExtractionSource ? `<p class="extraction-source">Extracted via ${lastExtractionSource}</p>` : ''}<table><thead><tr><th>Field</th><th>Value</th></tr></thead><tbody>`; let grp = null; displayOrder.forEach(item => { const r = rowLookup[item.fieldName], v = r?.value ?? ''; if (item.group !== grp) { grp = item.group; html += `<tr><td colspan="2" class="section">${escapeHtml(grp)}</td></tr>`; } html += `<tr><td>${escapeHtml(item.fieldName)}</td><td>${escapeHtml(v)}</td></tr>`; }); html += `</tbody></table><p style="margin-top:20px;color:#64748b;font-size:10px;">Generated by Adopt(k) - Waivz.ai</p></body></html>`; const w = window.open('', '_blank'); w.document.write(html); w.document.close(); w.focus(); setTimeout(() => w.print(), 250); }
-
-  async function initSystemEngineWithRuntimes() { try { await Promise.all([loadPdfJsIfNeeded(), loadPyodideRuntimeIfNeeded()]); } catch (err) { console.error(err); updateStatus("Runtime load failed", true, true); showError("Engine failed: " + err.message); return; } await initSystemEngine(); }
-  
-  async function initSystemEngine() {
-    if (initializationInProgress) return; initializationInProgress = true;
-    const eb = qs('#error-box'), rb = qs('#retry-init-btn'), ld = qs('#py-loader');
-    if (eb) eb.classList.add('hidden'); if (rb) rb.classList.add('hidden'); if (ld) ld.classList.remove('hidden');
-    
-    updateStatus("Step 1/4: Initializing PDF Reader...");
-    if (!window.pdfjsLib || typeof window.pdfjsLib.getDocument !== 'function') { updateStatus("Init Failed (Step 1)", true, true); showError("PDF.js failed"); return; }
-    pdfjsLibInstance = window.pdfjsLib;
-    
-    updateStatus("Step 2/4: Loading Python Utility...");
-    try { pyodideInstance = await window.loadPyodide({ indexURL: "https://cdn.jsdelivr.net/pyodide/v0.25.0/full/" }); await pyodideInstance.runPythonAsync("import sys"); } catch (err) { console.error(err); updateStatus("Init Failed (Step 2)", true, true); showError(`Pyodide failed: ${err.message}`); return; }
-    
-    updateStatus("Step 3/4: Loading Cleaning Scripts...");
-    try { await pyodideInstance.runPythonAsync(pythonCleaningScript); } catch (err) { console.error(err); updateStatus("Init Failed (Step 3)", true, true); showError("Cleaning script failed: " + err.message); return; }
-    
-    updateStatus("Step 4/4: Checking OCR Service...");
-    try {
-      ocrWorkerAvailable = await checkOcrWorkerHealth();
-      updateOcrBadge(ocrWorkerAvailable);
-      console.log(ocrWorkerAvailable ? '[Adopt(k)] CloudConvert OCR available' : '[Adopt(k)] OCR unavailable, using PDF.js');
-    } catch (err) {
-      console.log('[Adopt(k)] OCR check failed:', err.message);
-      updateOcrBadge(false);
-    }
-    
-    const statusMsg = ocrWorkerAvailable ? "Engine Ready (CloudConvert OCR Active)" : "Engine Ready";
-    updateStatus(statusMsg, false, true); 
-    enableUpload(); 
-    initializationInProgress = false;
-  }
+  async function handleExportCopy() { if (!ensureExtractionAvailable()) return; try { await navigator.clipboard.writeText(lastHtmlTableString); alert("Copied!"); } catch (e) { alert("Copy failed"); } }
+  function handleExportHtml() { if (!ensureExtractionAvailable()) return; downloadFile("plan_extraction.html", "text/html", `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Plan Extraction</title></head><body>${lastHtmlTableString}</body></html>`); }
+  function handleExportCsv() { if (!ensureExtractionAvailable()) return; const displayOrder = parseDisplayOrder(displayOrderMD), rowLookup = buildRowLookup(lastExtractionRows); let csv = 'Field,Value,Status\n'; displayOrder.forEach(item => { const r = rowLookup[item.fieldName]; csv += `"${item.fieldName}","${(r?.value||'').replace(/"/g,'""')}","${r?.status||''}"\n`; }); downloadFile("plan_extraction.csv", "text/csv", csv); }
+  function handleExportPdf() { if (!ensureExtractionAvailable()) return; const displayOrder = parseDisplayOrder(displayOrderMD), rowLookup = buildRowLookup(lastExtractionRows); let html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Plan Report</title><style>body{font-family:sans-serif;font-size:11px;}table{width:100%;border-collapse:collapse;}th{background:#0b5fff;color:white;padding:10px;}td{padding:8px;border:1px solid #ccc;}.section{background:#f1f5f9;color:#0b5fff;font-weight:700;}</style></head><body><h1 style="color:#0b5fff;">Plan Extraction Report</h1><p style="color:#666;">Extracted via ${lastExtractionSource}</p><table><thead><tr><th>Field</th><th>Value</th></tr></thead><tbody>`; let grp = null; displayOrder.forEach(item => { const r = rowLookup[item.fieldName]; if (item.group !== grp) { grp = item.group; html += `<tr><td colspan="2" class="section">${grp}</td></tr>`; } html += `<tr><td>${item.fieldName}</td><td>${r?.value||''}</td></tr>`; }); html += `</tbody></table></body></html>`; const w = window.open('', '_blank'); w.document.write(html); w.document.close(); setTimeout(() => w.print(), 250); }
 
   let selectedFile = null;
 
@@ -723,136 +414,93 @@ Will a Recipient be entitled to request a Direct In-Plan Roth Rollover
     const fi = qs('#file-upload'); if (!fi) return;
     
     fi.addEventListener('change', (event) => {
-      const file = event.target.files[0]; 
-      if (!file || file.type !== 'application/pdf') { alert("Please upload a valid PDF file."); return; }
+      const file = event.target.files[0];
+      if (!file || file.type !== 'application/pdf') { alert("Please select a PDF file."); return; }
       selectedFile = file;
       const fileInfoPanel = qs('#selected-file-info'), fileName = qs('#selected-file-name'), fileSize = qs('#selected-file-size');
       if (fileInfoPanel) fileInfoPanel.classList.remove('hidden');
       if (fileName) fileName.textContent = file.name;
       if (fileSize) fileSize.textContent = `Size: ${(file.size / 1024).toFixed(1)} KB`;
-      updateStatus("File selected. Click 'Process' when ready.", false, true);
+      updateStatus("File selected. Click Process when ready.");
     });
     
     const clearBtn = qs('#clear-file-btn');
-    if (clearBtn) {
-      clearBtn.addEventListener('click', () => {
-        selectedFile = null;
-        const fi = qs('#file-upload'); if (fi) fi.value = '';
-        const fileInfoPanel = qs('#selected-file-info'); if (fileInfoPanel) fileInfoPanel.classList.add('hidden');
-        updateStatus("Engine Ready", false, true);
-      });
-    }
+    if (clearBtn) clearBtn.addEventListener('click', () => {
+      selectedFile = null;
+      const fi = qs('#file-upload'); if (fi) fi.value = '';
+      qs('#selected-file-info')?.classList.add('hidden');
+      updateStatus("Ready - Select a PDF to begin");
+    });
     
     const processBtn = qs('#process-btn');
     if (processBtn) {
       processBtn.addEventListener('click', async () => {
-        if (!selectedFile) { alert("Please select a file first."); return; }
-        if (!pyodideInstance || !pdfjsLibInstance) { showError("Engine not ready."); return; }
+        if (!selectedFile) { alert("Select a file first."); return; }
         
-        const errorBox = qs('#error-box'); if (errorBox) errorBox.classList.add('hidden');
+        qs('#error-box')?.classList.add('hidden');
         processBtn.disabled = true;
-        processBtn.innerHTML = '<span class="loader-dark" style="width:18px;height:18px;border-width:2px;"></span> Processing...';
-        
+        processBtn.innerHTML = '<span class="loader-dark"></span> Processing...';
         showOverlay();
-        updateStatus("Reading PDF file...", false, false);
-        lastExtractionSource = "";
+        updateStatus("Reading PDF file...");
         
         const reader = new FileReader();
         reader.onload = async (e) => {
           try {
-            const typedarray = new Uint8Array(e.target.result);
-            let fullText = "";
-
-            // STEP 1: Try CloudConvert OCR if available
-            if (ocrWorkerAvailable) {
-              try {
-                updateStatus("Processing with CloudConvert OCR...", false, false);
-                const arrayBuffer = typedarray.buffer.slice(typedarray.byteOffset, typedarray.byteOffset + typedarray.byteLength);
-                const result = await extractWithOcrWorker(arrayBuffer, (msg) => updateStatus(msg, false, false));
-                fullText = result.text;
-                lastExtractionSource = result.source;
-                console.log(`[Adopt(k)] OCR extraction: ${result.characters} chars`);
-              } catch (ocrErr) {
-                console.warn("[Adopt(k)] OCR failed, falling back to PDF.js:", ocrErr.message);
-                fullText = "";
-              }
-            }
-
-            // STEP 2: Fallback to PDF.js
-            if (!fullText || fullText.length < 100) {
-              updateStatus("Extracting PDF Text (Local)...", false, false);
-              const loadingTask = pdfjsLibInstance.getDocument({ data: typedarray }), pdf = await loadingTask.promise;
-              fullText = "";
-              for (let i = 1; i <= pdf.numPages; i++) { 
-                if (i % 20 === 0 || i === 1) updateStatus(`Extracting (Page ${i}/${pdf.numPages})...`, false, false); 
-                const page = await pdf.getPage(i), tc = await page.getTextContent(); 
-                fullText += tc.items.map(item => item.str).join(' ') + "\n"; 
-              }
-              lastExtractionSource = "PDF.js (local)";
-            }
+            const pdfBase64 = arrayBufferToBase64(e.target.result);
+            const model = qs('#llm-model')?.value || 'claude-sonnet-4-5';
             
-            updateStatus("Normalizing Text...", false, false);
-            const cleanFunc = pyodideInstance.globals.get('clean_extracted_text'), cleanedText = cleanFunc(fullText.replace(/\0/g, ''), true, false);
+            updateStatus("Sending to AI for visual analysis...");
+            console.log(`[Adopt(k)] Sending ${(pdfBase64.length / 1024).toFixed(0)} KB PDF to ${model}`);
             
-            updateStatus("Analyzing with AI...", false, false);
-            const rows = await callExtractorBackend(cleanedText);
-            renderData(rows); 
-            hideOverlay(); 
-            updateStatus(`Analysis Complete (via ${lastExtractionSource})`, false, true);
+            const data = await callExtractorBackend(pdfBase64, model);
             
+            lastExtractionSource = data.model_used || model;
+            renderData(data.rows);
+            hideOverlay();
+            updateStatus(`Complete! Analyzed with ${lastExtractionSource}`);
+            
+            // Reset
             selectedFile = null;
-            const fileInfoPanel = qs('#selected-file-info'); if (fileInfoPanel) fileInfoPanel.classList.add('hidden');
-            const fileInput = qs('#file-upload'); if (fileInput) fileInput.value = '';
+            qs('#selected-file-info')?.classList.add('hidden');
+            qs('#file-upload').value = '';
             
-          } catch (err) { 
-            console.error(err); 
-            updateStatus("Processing Error", true, true); 
-            showError("Error: " + err.message); 
-            hideOverlay(); 
+          } catch (err) {
+            console.error(err);
+            updateStatus("Error: " + err.message, true);
+            showError(err.message);
+            hideOverlay();
           } finally {
             processBtn.disabled = false;
             processBtn.innerHTML = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg> Click to Process Document';
           }
         };
-        reader.onerror = () => { 
-          showError("Error reading file."); 
-          updateStatus("File Read Error", true, true); 
-          hideOverlay(); 
-          processBtn.disabled = false;
-          processBtn.innerHTML = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg> Click to Process Document';
-        };
+        reader.onerror = () => { showError("Error reading file."); hideOverlay(); processBtn.disabled = false; };
         reader.readAsArrayBuffer(selectedFile);
       });
     }
   }
 
   function wireButtons() {
-    const retryBtn = qs('#retry-init-btn'); if (retryBtn) retryBtn.addEventListener('click', initSystemEngineWithRuntimes);
-    const copyBtn = qs('#export-copy-btn'), htmlBtn = qs('#export-html-btn'), pdfBtn = qs('#export-pdf-btn'), csvBtn = qs('#export-csv-btn');
-    if (copyBtn) copyBtn.addEventListener('click', handleExportCopy);
-    if (htmlBtn) htmlBtn.addEventListener('click', handleExportHtml);
-    if (pdfBtn) pdfBtn.addEventListener('click', handleExportPdf);
-    if (csvBtn) csvBtn.addEventListener('click', handleExportCsv);
+    qs('#export-copy-btn')?.addEventListener('click', handleExportCopy);
+    qs('#export-html-btn')?.addEventListener('click', handleExportHtml);
+    qs('#export-pdf-btn')?.addEventListener('click', handleExportPdf);
+    qs('#export-csv-btn')?.addEventListener('click', handleExportCsv);
 
-    const howToUseBtn = qs('#how-to-use-btn'), helpModal = document.getElementById('help-modal'), helpModalClose = document.getElementById('help-modal-close'), helpModalClose2 = document.getElementById('help-modal-close-2');
-    if (howToUseBtn) howToUseBtn.addEventListener('click', () => { if (helpModal) { helpModal.classList.remove('hidden'); helpModal.style.display = 'flex'; } });
-    if (helpModalClose) helpModalClose.addEventListener('click', () => { if (helpModal) { helpModal.classList.add('hidden'); helpModal.style.display = 'none'; } });
-    if (helpModalClose2) helpModalClose2.addEventListener('click', () => { if (helpModal) { helpModal.classList.add('hidden'); helpModal.style.display = 'none'; } });
-    if (helpModal) helpModal.addEventListener('click', (e) => { if (e.target.id === 'help-modal') { helpModal.classList.add('hidden'); helpModal.style.display = 'none'; } });
+    const helpModal = document.getElementById('help-modal');
+    qs('#how-to-use-btn')?.addEventListener('click', () => { helpModal.classList.remove('hidden'); helpModal.style.display = 'flex'; });
+    document.getElementById('help-modal-close')?.addEventListener('click', () => { helpModal.classList.add('hidden'); });
+    document.getElementById('help-modal-close-2')?.addEventListener('click', () => { helpModal.classList.add('hidden'); });
 
-    const whatsNewBtn = qs('#whats-new-btn'), whatsNewModal = document.getElementById('whats-new-modal'), whatsNewModalClose = document.getElementById('whats-new-modal-close'), whatsNewCloseBtn = document.getElementById('whats-new-close-btn');
-    if (whatsNewBtn) whatsNewBtn.addEventListener('click', () => { if (whatsNewModal) { whatsNewModal.classList.remove('hidden'); whatsNewModal.style.display = 'flex'; } });
-    if (whatsNewModalClose) whatsNewModalClose.addEventListener('click', () => { if (whatsNewModal) { whatsNewModal.classList.add('hidden'); whatsNewModal.style.display = 'none'; } });
-    if (whatsNewCloseBtn) whatsNewCloseBtn.addEventListener('click', () => { if (whatsNewModal) { whatsNewModal.classList.add('hidden'); whatsNewModal.style.display = 'none'; } });
-    if (whatsNewModal) whatsNewModal.addEventListener('click', (e) => { if (e.target.id === 'whats-new-modal') { whatsNewModal.classList.add('hidden'); whatsNewModal.style.display = 'none'; } });
+    const whatsNewModal = document.getElementById('whats-new-modal');
+    qs('#whats-new-btn')?.addEventListener('click', () => { whatsNewModal.classList.remove('hidden'); whatsNewModal.style.display = 'flex'; });
+    document.getElementById('whats-new-modal-close')?.addEventListener('click', () => { whatsNewModal.classList.add('hidden'); });
+    document.getElementById('whats-new-close-btn')?.addEventListener('click', () => { whatsNewModal.classList.add('hidden'); });
 
-    const evidenceModalClose = document.getElementById('evidence-modal-close'), evidenceCloseBtn = document.getElementById('evidence-close-btn'), evidenceModal = document.getElementById('evidence-modal');
-    if (evidenceModalClose) evidenceModalClose.addEventListener('click', window.closeEvidenceModal);
-    if (evidenceCloseBtn) evidenceCloseBtn.addEventListener('click', window.closeEvidenceModal);
-    if (evidenceModal) evidenceModal.addEventListener('click', (e) => { if (e.target.id === 'evidence-modal') window.closeEvidenceModal(); });
+    document.getElementById('evidence-modal-close')?.addEventListener('click', window.closeEvidenceModal);
+    document.getElementById('evidence-close-btn')?.addEventListener('click', window.closeEvidenceModal);
   }
 
-  function init() { hideOverlay(); wireFileUpload(); wireButtons(); initSystemEngineWithRuntimes(); }
+  function init() { hideOverlay(); wireFileUpload(); wireButtons(); }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
   else init();
 })();
