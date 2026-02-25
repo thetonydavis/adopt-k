@@ -7,505 +7,279 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     body { background: #0F172A; margin: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
-    @keyframes orangeGlow { 0% { box-shadow: inset 0 0 150px 50px rgba(249, 115, 22, 0.15); } 50% { box-shadow: inset 0 0 250px 100px rgba(249, 115, 22, 0.08); } 100% { box-shadow: inset 0 0 150px 50px rgba(249, 115, 22, 0.15); } }
-    .glow-container { animation: orangeGlow 4s ease-in-out infinite; }
-    .loader-dark { width: 18px; height: 18px; border: 2px solid #334155; border-top-color: #0b5fff; border-radius: 50%; animation: spin 1s linear infinite; }
-    @keyframes spin { to { transform: rotate(360deg); } }
-    .upload-area-dark { border: 2px dashed #334155; background: #1E293B; transition: all 0.2s; }
-    .upload-area-dark.enabled:hover { border-color: #0b5fff; background: #1e3a5f; }
-    .status-section-dark { background: #1E293B; border: 1px solid #334155; border-radius: 0.5rem; padding: 1rem; }
+    .upload-area { border: 2px dashed #334155; background: #1E293B; transition: all 0.2s; cursor: pointer; }
+    .upload-area:hover { border-color: #0b5fff; background: #1e3a5f; }
+    .upload-area.dragover { border-color: #10b981; background: #064e3b; }
     .results-table { width: 100%; border-collapse: collapse; }
-    .results-table th { background: #0b5fff; color: white; padding: 12px 16px; text-align: left; font-weight: 600; }
+    .results-table th { background: #0b5fff; color: white; padding: 12px 16px; text-align: left; }
     .results-table td { padding: 10px 16px; border-bottom: 1px solid #334155; color: #E2E8F0; }
-    .results-table .section-header-row td { background: linear-gradient(90deg, #1e3a5f 0%, #1E293B 100%); color: #0b5fff; font-weight: 700; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.05em; border-left: 3px solid #0b5fff; }
+    .results-table .section-row td { background: linear-gradient(90deg, #1e3a5f 0%, #1E293B 100%); color: #0b5fff; font-weight: 700; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.05em; border-left: 3px solid #0b5fff; }
     .results-table .data-row:hover td { background: #1e3a5f; }
-    .results-table .empty-value { color: #64748B; font-style: italic; }
-    .results-overlay { position: absolute; inset: 0; background: rgba(15, 23, 42, 0.95); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 10; border-radius: 0 0 0.75rem 0.75rem; }
-    .results-overlay-text { color: white; font-size: 1.125rem; font-weight: 600; margin-top: 1.5rem; }
-    .results-overlay-subtext { color: #94A3B8; font-size: 0.875rem; margin-top: 0.5rem; }
-    .hidden { display: none !important; }
-    .nav-btn { display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; background: #0b5fff; border: none; border-radius: 0.5rem; cursor: pointer; transition: all 0.2s; text-align: left; }
-    .nav-btn:hover { background: #0047cc; }
-    .nav-btn-icon { width: 36px; height: 36px; background: rgba(255,255,255,0.2); border-radius: 0.375rem; display: flex; align-items: center; justify-content: center; color: white; }
-    .nav-btn-content { flex: 1; }
-    .nav-btn-title { color: white; font-weight: 600; font-size: 0.875rem; }
-    .nav-btn-subtitle { color: rgba(255,255,255,0.7); font-size: 0.75rem; }
-    .nav-btn-badge { background: #10b981; color: white; font-size: 0.625rem; font-weight: 700; padding: 0.125rem 0.5rem; border-radius: 9999px; text-transform: uppercase; }
-    .coverage-bar { display: flex; gap: 1rem; padding: 0.75rem 1rem; background: #1E293B; border-radius: 0.5rem; margin-bottom: 1rem; }
-    .coverage-pill { display: flex; align-items: center; gap: 0.5rem; padding: 0.375rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; }
-    .coverage-pill.certified { background: rgba(16, 185, 129, 0.2); color: #10b981; }
-    .coverage-pill.review { background: rgba(245, 158, 11, 0.2); color: #f59e0b; }
-    .coverage-pill.silent { background: rgba(100, 116, 139, 0.2); color: #94A3B8; }
-    .status-badge { display: inline-block; padding: 0.125rem 0.5rem; border-radius: 0.25rem; font-size: 0.625rem; font-weight: 700; text-transform: uppercase; }
+    .loader { width: 48px; height: 48px; border: 4px solid #334155; border-top-color: #0b5fff; border-radius: 50%; animation: spin 1s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .status-badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 700; text-transform: uppercase; }
     .status-badge.certified { background: rgba(16, 185, 129, 0.2); color: #10b981; }
-    .status-badge.ambiguous { background: rgba(245, 158, 11, 0.2); color: #f59e0b; }
-    .status-badge.conflict { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
     .status-badge.silent { background: rgba(100, 116, 139, 0.2); color: #64748B; }
-    .status-badge.uncertain { background: rgba(139, 92, 246, 0.2); color: #8b5cf6; }
-    .source-btn { background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.6875rem; font-weight: 600; cursor: pointer; transition: all 0.15s; white-space: nowrap; }
-    .source-btn:hover { background: rgba(16, 185, 129, 0.25); border-color: #10b981; }
-    .modal-backdrop { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.75); display: flex; align-items: center; justify-content: center; z-index: 50; padding: 1rem; }
-    .modal-container { background: #1E293B; border-radius: 0.75rem; max-width: 600px; width: 100%; max-height: 90vh; overflow: hidden; display: flex; flex-direction: column; border: 1px solid #334155; }
-    .modal-header { background: linear-gradient(135deg, #0b5fff 0%, #0047cc 100%); padding: 1rem 1.5rem; display: flex; justify-content: space-between; align-items: center; }
-    .modal-header h3 { color: white; font-size: 1.125rem; font-weight: 600; margin: 0; }
-    .modal-close { background: none; border: none; color: white; font-size: 1.5rem; cursor: pointer; opacity: 0.8; transition: opacity 0.2s; line-height: 1; }
-    .modal-close:hover { opacity: 1; }
-    .modal-body { padding: 1.5rem; overflow-y: auto; color: #E2E8F0; }
-    .modal-body h4 { color: #0b5fff; font-size: 1rem; font-weight: 600; margin: 1.25rem 0 0.75rem 0; }
-    .modal-body h4:first-child { margin-top: 0; }
-    .modal-body p { margin: 0.5rem 0; line-height: 1.6; color: #94A3B8; }
-    .modal-footer { padding: 1rem 1.5rem; border-top: 1px solid #334155; display: flex; justify-content: flex-end; gap: 0.75rem; }
-    .modal-btn-primary { background: #0b5fff; color: white; border: none; padding: 0.5rem 1rem; border-radius: 0.375rem; font-weight: 500; cursor: pointer; transition: background 0.2s; }
-    .modal-btn-primary:hover { background: #0047cc; }
-    .highlight-box { background: rgba(11, 95, 255, 0.1); border: 1px solid rgba(11, 95, 255, 0.3); border-radius: 0.5rem; padding: 1rem; margin: 1rem 0; }
-    .highlight-box strong { color: #0b5fff; }
-    .tip-box { background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 0.5rem; padding: 1rem; margin: 1rem 0; }
-    .tip-box strong { color: #10b981; }
-    .evidence-card { background: #0F172A; border: 1px solid #334155; border-radius: 0.5rem; padding: 1rem; margin-bottom: 0.75rem; }
-    .evidence-meta { font-size: 0.75rem; color: #64748B; margin-bottom: 0.5rem; }
-    .evidence-quote { color: #E2E8F0; font-style: italic; line-height: 1.6; border-left: 3px solid #10b981; padding-left: 0.75rem; }
-    .clock-spinner { width: 80px; height: 80px; border-radius: 50%; background: linear-gradient(135deg, #1E293B, #0F172A); border: 3px solid #0b5fff; position: relative; box-shadow: 0 0 20px rgba(11, 95, 255, 0.3); }
-    .clock-center { position: absolute; width: 8px; height: 8px; background: #0b5fff; border-radius: 50%; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 3; }
-    .clock-hand-hour { position: absolute; width: 3px; height: 20px; background: #0b5fff; left: 50%; bottom: 50%; transform-origin: bottom center; transform: translateX(-50%); border-radius: 2px; animation: spin-reverse 3s linear infinite; }
-    .clock-hand-minute { position: absolute; width: 2px; height: 28px; background: #60A5FA; left: 50%; bottom: 50%; transform-origin: bottom center; transform: translateX(-50%); border-radius: 2px; animation: spin-reverse 1s linear infinite; }
-    @keyframes spin-reverse { from { transform: translateX(-50%) rotate(360deg); } to { transform: translateX(-50%) rotate(0deg); } }
-    .process-btn { width: 100%; padding: 0.75rem 1rem; background: #10b981; color: white; font-weight: 600; border: none; border-radius: 0.5rem; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 0.5rem; }
-    .process-btn:hover { background: #059669; }
-    .process-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-    .vision-badge { display: inline-flex; align-items: center; gap: 0.25rem; padding: 0.125rem 0.5rem; border-radius: 9999px; font-size: 0.625rem; font-weight: 600; background: rgba(139, 92, 246, 0.2); color: #a78bfa; }
   </style>
 </head>
 <body>
-<div id="docuwaivz-app" class="flex h-screen overflow-hidden">
-  <aside class="w-80 bg-[#0F172A] border-r border-[#334155] flex flex-col z-10 text-white">
-    <div class="px-5 pt-8 pb-4">
-      <div class="flex items-start justify-between">
-        <h1 class="text-4xl font-bold text-white tracking-tight leading-none -mt-1">Adopt<span class="ml-0.5 text-[#0b5fff]">(k)</span></h1>
-      </div>
-      <p class="text-sm text-[#94A3B8] mt-2">Adoption Agreement Parser</p>
-      <div class="mt-4 space-y-2">
-        <button id="how-to-use-btn" class="nav-btn w-full">
-          <div class="nav-btn-icon"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg></div>
-          <div class="nav-btn-content"><div class="nav-btn-title">How to Use</div><div class="nav-btn-subtitle">Step-by-step guide</div></div>
-          <svg class="w-5 h-5 text-white/50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
-        </button>
-        <button id="whats-new-btn" class="nav-btn w-full">
-          <div class="nav-btn-icon"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg></div>
-          <div class="nav-btn-content"><div class="nav-btn-title">What's New</div><div class="nav-btn-subtitle">Vision Mode v2.1</div></div>
-          <span class="nav-btn-badge">NEW</span>
-        </button>
-      </div>
+<div class="min-h-screen p-8">
+  <div class="max-w-6xl mx-auto">
+    <!-- Header -->
+    <div class="mb-8">
+      <h1 class="text-4xl font-bold text-white">Adopt<span class="text-[#0b5fff]">(k)</span></h1>
+      <p class="text-[#94A3B8] mt-2">AI Vision-Powered Adoption Agreement Parser</p>
     </div>
-    <div class="p-6 flex-1 overflow-y-auto">
-      <div class="mb-6">
-        <h2 class="text-sm font-semibold text-[#0b5fff] uppercase tracking-wider mb-3">1. LLM Model</h2>
-        <label for="llm-model" class="block text-sm font-medium text-white mb-2">Model (server-side)</label>
-        <select id="llm-model" class="mt-1 block w-full px-3 py-2 bg-[#1E293B] border border-[#334155] rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#0b5fff]/50 focus:border-[#0b5fff] sm:text-sm text-white">
-          <option value="claude-sonnet-4-6" selected>👁️ Claude Sonnet 4.6 (Best Balance)</option>
-          <option value="claude-opus-4-6">👁️ Claude Opus 4.6 (Most Intelligent)</option>
-          <option value="gemini-3.1-pro">👁️ Gemini 3.1 Pro (Latest)</option>
-          <option value="gemini-3-pro">👁️ Gemini 3 Pro (Vision)</option>
-          <option value="gpt-5.2">⭐ GPT-5.2 (OpenAI Flagship)</option>
+
+    <!-- Upload Section -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+      <div class="lg:col-span-1 bg-[#1E293B] rounded-xl p-6 border border-[#334155]">
+        <h2 class="text-sm font-semibold text-[#0b5fff] uppercase tracking-wider mb-4">1. Select Model</h2>
+        <select id="model-select" class="w-full px-3 py-2 bg-[#0F172A] border border-[#334155] rounded-lg text-white focus:outline-none focus:border-[#0b5fff]">
+          <option value="claude-sonnet-4-6">👁️ Claude Sonnet 4.6 (Best)</option>
+          <option value="claude-opus-4-6">👁️ Claude Opus 4.6 (Premium)</option>
+          <option value="gemini-3-pro">👁️ Gemini 3 Pro</option>
+          <option value="gpt-5.2">👁️ GPT-5.2</option>
         </select>
-        <p class="mt-1 text-xs text-[#94A3B8]">👁️ = Vision mode (sees checkboxes visually)</p>
-      </div>
-      <div class="mb-6 pt-4 border-t border-[#334155]">
-        <h2 class="text-sm font-semibold text-[#0b5fff] uppercase tracking-wider mb-3">2. Select Adoption Agreement</h2>
-        <label id="upload-label" class="upload-area-dark flex flex-col items-center justify-center w-full h-32 rounded-lg cursor-pointer enabled">
-          <div class="flex flex-col items-center justify-center pt-5 pb-6">
-            <svg id="upload-icon" class="w-8 h-8 mb-3 text-[#0b5fff]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
-            <p class="text-sm text-[#94A3B8]"><span class="font-semibold" id="upload-text">Click to select PDF</span></p>
-          </div>
-          <input id="file-upload" type="file" class="hidden" accept=".pdf" />
+        <p class="text-xs text-[#64748B] mt-2">All models use vision to see checkboxes directly</p>
+
+        <h2 class="text-sm font-semibold text-[#0b5fff] uppercase tracking-wider mb-4 mt-6">2. Upload PDF</h2>
+        <label id="upload-area" class="upload-area flex flex-col items-center justify-center w-full h-40 rounded-lg">
+          <svg class="w-10 h-10 mb-3 text-[#0b5fff]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+          </svg>
+          <p class="text-sm text-[#94A3B8]"><span class="font-semibold text-white" id="upload-text">Click or drag PDF here</span></p>
+          <input id="file-input" type="file" class="hidden" accept=".pdf" />
         </label>
-        <div id="selected-file-info" class="hidden mt-3 p-3 bg-[#0F172A] border border-[#334155] rounded-lg">
-          <div class="flex items-center justify-between mb-2">
-            <span id="selected-file-name" class="text-sm text-white font-medium truncate"></span>
-            <button id="clear-file-btn" class="text-xs text-[#94A3B8] hover:text-red-400 transition">✕ Clear</button>
-          </div>
-          <div id="selected-file-size" class="text-xs text-[#64748B] mb-3"></div>
-          <button id="process-btn" class="process-btn">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
-            Click to Process Document
-          </button>
-        </div>
-      </div>
-      <div class="mb-6 pt-4 border-t border-[#334155]">
-        <h2 class="text-sm font-semibold text-[#0b5fff] uppercase tracking-wider mb-3">3. Status</h2>
-        <div id="status-container" class="status-section-dark">
-          <div id="status-msg" class="text-sm flex items-center gap-3">
-            <span id="status-text" style="color: #6EE7B7;">Ready - Select a PDF to begin</span>
-          </div>
-          <div id="vision-status" class="mt-2"><span class="vision-badge">👁️ Vision Mode Enabled</span></div>
-        </div>
-        <div id="error-box" class="hidden mt-3 p-3 bg-red-500/20 border border-red-400/30 rounded-lg text-xs text-red-200 break-words max-h-60 overflow-y-auto"></div>
-      </div>
-      <div class="pt-4 border-t border-[#334155]">
-        <p class="text-xs text-[#64748B]"><strong class="text-[#94A3B8]">Vision Mode:</strong> The AI visually examines your PDF to see checkboxes directly, just like a human would.</p>
-      </div>
-    </div>
-  </aside>
 
-  <main class="flex-1 overflow-y-auto bg-[#0F172A] glow-container">
-    <div class="p-8">
-      <div id="results-header" class="bg-gradient-to-r from-[#0b5fff] to-[#0047cc] p-6 rounded-t-xl shadow-lg border border-[#1e4ec1] flex justify-between items-start">
-        <div><h2 class="text-2xl font-bold text-white">Plan Extraction Results</h2><p class="text-sm text-white/90 mt-1">Review the extracted data below. Values are visually verified from the document.</p></div>
-        <div class="text-right"><div class="text-xs text-white/70">Extraction Mode</div><div class="text-lg font-bold text-white">👁️ Vision</div></div>
-      </div>
-      <div id="coverage-bar" class="coverage-bar hidden"></div>
-      <div id="results-container" class="relative bg-[#1E293B] shadow-sm border-x border-b border-[#334155] rounded-b-xl">
-        <div id="results-table" class="overflow-x-auto"><p class="text-[#94A3B8] text-center py-20">Select a PDF and click Process to begin extraction...</p></div>
-        <div id="results-loading-overlay" class="results-overlay hidden">
-          <div class="clock-spinner"><div class="clock-center"></div><div class="clock-hand-hour"></div><div class="clock-hand-minute"></div></div>
-          <div class="results-overlay-text">Analyzing document with AI vision...</div>
-          <div class="results-overlay-subtext">👁️ Visually examining checkboxes and form fields</div>
+        <div id="file-info" class="hidden mt-4 p-3 bg-[#0F172A] rounded-lg border border-[#334155]">
+          <div class="flex justify-between items-center">
+            <span id="file-name" class="text-sm text-white truncate"></span>
+            <button id="clear-btn" class="text-xs text-[#94A3B8] hover:text-red-400">✕</button>
+          </div>
+          <div id="file-size" class="text-xs text-[#64748B] mt-1"></div>
         </div>
+
+        <button id="process-btn" class="w-full mt-4 py-3 bg-[#10b981] hover:bg-[#059669] text-white font-semibold rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+          <span id="btn-text">Select a PDF first</span>
+        </button>
+
+        <div id="status" class="mt-4 text-sm text-[#94A3B8]"></div>
       </div>
-      <div class="mt-4 bg-[#1E293B] rounded-xl shadow-sm border border-[#334155] overflow-hidden">
-        <div class="px-6 py-3 bg-gradient-to-r from-[#0b5fff] to-[#0047cc] flex items-center justify-between"><h3 class="text-sm font-semibold text-white">Export Options</h3></div>
-        <div class="px-6 py-4"><div class="flex flex-wrap gap-3">
-          <button id="export-copy-btn" class="px-4 py-2 text-sm font-medium rounded-md border border-[#0b5fff] text-[#0b5fff] bg-transparent hover:bg-[#0b5fff] hover:text-white transition">📋 Copy</button>
-          <button id="export-html-btn" class="px-4 py-2 text-sm font-medium rounded-md border border-[#0b5fff] text-[#0b5fff] bg-transparent hover:bg-[#0b5fff] hover:text-white transition">🌐 HTML</button>
-          <button id="export-pdf-btn" class="px-4 py-2 text-sm font-medium rounded-md border border-[#0b5fff] text-[#0b5fff] bg-transparent hover:bg-[#0b5fff] hover:text-white transition">📄 PDF</button>
-          <button id="export-csv-btn" class="px-4 py-2 text-sm font-medium rounded-md border border-[#0b5fff] text-[#0b5fff] bg-transparent hover:bg-[#0b5fff] hover:text-white transition">📊 CSV</button>
-        </div></div>
+
+      <!-- Results Section -->
+      <div class="lg:col-span-2 bg-[#1E293B] rounded-xl border border-[#334155] overflow-hidden">
+        <div class="bg-gradient-to-r from-[#0b5fff] to-[#0047cc] p-4">
+          <h2 class="text-lg font-bold text-white">Extraction Results</h2>
+          <p class="text-sm text-white/80">AI visually analyzes your PDF - sees checkboxes like a human</p>
+        </div>
+        
+        <div id="results-container" class="p-6">
+          <div id="results-placeholder" class="text-center py-16 text-[#64748B]">
+            <svg class="w-16 h-16 mx-auto mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+            </svg>
+            <p>Upload a PDF to extract plan data</p>
+          </div>
+          
+          <div id="results-loading" class="hidden text-center py-16">
+            <div class="loader mx-auto mb-4"></div>
+            <p class="text-white font-medium">Analyzing document with AI vision...</p>
+            <p class="text-sm text-[#94A3B8] mt-1">The AI is looking at your PDF like a human would</p>
+          </div>
+          
+          <div id="results-table-container" class="hidden overflow-x-auto"></div>
+        </div>
       </div>
     </div>
 
-    <!-- MODALS -->
-    <div id="help-modal" class="modal-backdrop hidden">
-      <div class="modal-container">
-        <div class="modal-header"><h3>📖 How to Use</h3><button id="help-modal-close" class="modal-close">&times;</button></div>
-        <div class="modal-body">
-          <h4>👁️ Vision Mode Extraction</h4>
-          <p>Adopt(k) v2.1 uses AI vision to actually SEE your PDF, just like ChatGPT does. The AI visually examines checkboxes instead of relying on text extraction.</p>
-          <div class="highlight-box"><strong>Why Vision?</strong> Text extraction often loses checkbox marks. Vision mode sees [✓] and [X] directly.</div>
-          <h4>Steps</h4>
-          <p>1. Select Claude Sonnet (best) or Gemini for vision mode</p>
-          <p>2. Upload your adoption agreement PDF</p>
-          <p>3. Click Process - the AI will visually analyze each page</p>
-          <p>4. Review results - Form of Business, Age Requirements, etc. now detected correctly</p>
-        </div>
-        <div class="modal-footer"><button id="help-modal-close-2" class="modal-btn-primary">Got it!</button></div>
+    <!-- Export Buttons -->
+    <div id="export-section" class="hidden bg-[#1E293B] rounded-xl p-4 border border-[#334155]">
+      <div class="flex flex-wrap gap-3">
+        <button onclick="exportCSV()" class="px-4 py-2 text-sm border border-[#0b5fff] text-[#0b5fff] rounded-lg hover:bg-[#0b5fff] hover:text-white transition">📊 Export CSV</button>
+        <button onclick="copyResults()" class="px-4 py-2 text-sm border border-[#0b5fff] text-[#0b5fff] rounded-lg hover:bg-[#0b5fff] hover:text-white transition">📋 Copy</button>
       </div>
     </div>
-    <div id="whats-new-modal" class="modal-backdrop hidden">
-      <div class="modal-container">
-        <div class="modal-header" style="background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%);"><h3>✨ What's New in v2.1</h3><button id="whats-new-modal-close" class="modal-close">&times;</button></div>
-        <div class="modal-body">
-          <h4>👁️ Vision Mode</h4>
-          <p>The AI now SEES your PDF visually, examining checkboxes just like a human would. No more lost checkbox marks!</p>
-          <div class="highlight-box"><strong>Fixed:</strong> Form of Business, Entity Type, Minimum Age, Service Requirement - all the checkbox fields now work correctly.</div>
-          <h4>How It Works</h4>
-          <p>Instead of extracting text (which loses checkboxes), we send the actual PDF to Claude/Gemini which can see the document visually.</p>
-          <div class="tip-box"><strong>Best Model:</strong> Claude Sonnet 4.5 has the best vision accuracy for adoption agreements.</div>
-        </div>
-        <div class="modal-footer"><button id="whats-new-close-btn" class="modal-btn-primary">Got it!</button></div>
-      </div>
-    </div>
-    <div id="evidence-modal" class="modal-backdrop hidden">
-      <div class="modal-container" style="max-width: 600px;">
-        <div class="modal-header" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);"><h3>📋 Source Evidence</h3><button id="evidence-modal-close" class="modal-close">&times;</button></div>
-        <div class="modal-body" id="evidence-body"></div>
-        <div class="modal-footer"><button id="evidence-close-btn" class="modal-btn-primary">Close</button></div>
-      </div>
-    </div>
-  </main>
+  </div>
 </div>
 
 <script>
-(function() {
-  const EXTRACTOR_API_BASE = "https://adoptk-extractor-931273582090.us-west1.run.app";
+const WORKER_URL = 'https://adoptk-vision.tony-e07.workers.dev';
+
+let selectedFile = null;
+let extractionResults = null;
+
+const uploadArea = document.getElementById('upload-area');
+const fileInput = document.getElementById('file-input');
+const fileInfo = document.getElementById('file-info');
+const fileName = document.getElementById('file-name');
+const fileSize = document.getElementById('file-size');
+const clearBtn = document.getElementById('clear-btn');
+const processBtn = document.getElementById('process-btn');
+const btnText = document.getElementById('btn-text');
+const status = document.getElementById('status');
+const modelSelect = document.getElementById('model-select');
+
+uploadArea.addEventListener('click', () => fileInput.click());
+uploadArea.addEventListener('dragover', (e) => { e.preventDefault(); uploadArea.classList.add('dragover'); });
+uploadArea.addEventListener('dragleave', () => uploadArea.classList.remove('dragover'));
+uploadArea.addEventListener('drop', (e) => {
+  e.preventDefault();
+  uploadArea.classList.remove('dragover');
+  const file = e.dataTransfer.files[0];
+  if (file && file.type === 'application/pdf') handleFile(file);
+});
+
+fileInput.addEventListener('change', (e) => {
+  if (e.target.files[0]) handleFile(e.target.files[0]);
+});
+
+clearBtn.addEventListener('click', () => {
+  selectedFile = null;
+  fileInput.value = '';
+  fileInfo.classList.add('hidden');
+  processBtn.disabled = true;
+  btnText.textContent = 'Select a PDF first';
+  document.getElementById('upload-text').textContent = 'Click or drag PDF here';
+});
+
+function handleFile(file) {
+  selectedFile = file;
+  fileName.textContent = file.name;
+  fileSize.textContent = `${(file.size / 1024).toFixed(1)} KB`;
+  fileInfo.classList.remove('hidden');
+  processBtn.disabled = false;
+  btnText.textContent = '🚀 Extract Plan Data';
+  document.getElementById('upload-text').textContent = file.name;
+}
+
+processBtn.addEventListener('click', async () => {
+  if (!selectedFile) return;
   
-  let lastExtractionRows = null, lastHtmlTableString = "", lastExtractionSource = "";
-
-  function qs(sel) { return document.querySelector('#docuwaivz-app ' + sel); }
-  function showOverlay() { const o = qs('#results-loading-overlay'); if (o) { o.classList.remove('hidden'); o.style.display = 'flex'; } }
-  function hideOverlay() { const o = qs('#results-loading-overlay'); if (o) { o.classList.add('hidden'); o.style.display = 'none'; } }
-  function updateStatus(text, isError = false) {
-    const st = qs('#status-text');
-    if (st) { st.innerText = text; st.style.color = isError ? '#FCA5A5' : '#6EE7B7'; }
-  }
-  function showError(msg) { 
-    const eb = qs('#error-box'); 
-    if (eb) { eb.innerHTML = '<strong>Error:</strong> ' + escapeHtml(msg); eb.classList.remove('hidden'); } 
-  }
-  function escapeHtml(s) { if (s == null) return ''; return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;"); }
-
-  const displayOrderMD = `## Company Information
-Company Name
-Company Street
-Company Street2
-City, State, ZIP
-Company Telephone
-EIN
-Form of Business
-Entity Type
-## Corporate Details
-Employer's Tax Year End
-Plan Year End
-Related Employers
-Related Employers Detail
-Multiple Employer Plan
-Affiliated_Employers
-## Plan Information
-Plan Name
-Original Effective Date
-Restatement Effective Date
-Plan Number
-Type of Plan
-Plan Year
-## Eligibility
-Eligible Employees
-Are Union Employees Excluded?
-Are Non-resident aliens Employees Excluded?
-Are Part time Employees Excluded?
-Are Employees as the result of a transaction described in Code section 410(b)(6)(C) Excluded?
-List of Excluded Employee Groups
-Is There More Than One Service Requirement?
-Service Requirement
-Hour Requirement
-Minimum Age Requirement
-Entry Date
-Elapsed Time or Hours of Service
-Effective Date of Age/Service Requirement (Amnesty Date)
-Counting Predecessor Service
-## Compensation
-Definition of Compensation
-Total Compensation
-Plan Compensation Exclusions
-Period for Determining Compensation
-Using Entry Date Compensation
-## Contributions
-Employer Non-Elective/Profit Sharing Contribution
-Employer Non-Elective/Profit Sharing Contribution Formula
-Employer Non-Elective/Profit Sharing Contribution Formula Type
-Employer Non-Elective/Profit Sharing Contribution Allocation Conditions
-Exceptions to Employer Non-Elective/Profit Sharing Contribution Allocation Conditions
-Salary Deferrals
-Roth Deferrals
-ADP/ACP Testing Method
-In-Plan Roth Transfers/Conversions Permitted
-Automatic Deferral Election
-Automatic Deferral Election Start Date
-Automatic Deferral Election Initial Percentage
-Automatic Deferral Election Increase
-Automatic Deferral Election Maximum Percentage
-Automatic Deferral Election Applicable To
-Matching Contributions
-Matching Contribution Formula
-Limit on Matching Contribution
-Period for Determining Matching Contributions
-Matching Contribution Allocation Conditions
-Exceptions to Matching Contribution Allocation Conditions
-## Safe Harbor
-Safe Harbor 401(k) Plan
-Is This a QACA Plan?
-Safe Harbor Type
-Safe Harbor Formula
-Period for Determining Safe Harbor Contribution
-Eligibility for Safe Harbor Contribution
-Safe Harbor Delayed Effective Date
-## Vesting
-Normal Retirement Age
-Early Retirement Age
-Retirement Age Years of Participation Required
-Retirement Age Years of Employment Required
-Vesting Schedule
-Vesting Exclusions
-Vesting for QACA
-Immediate Vesting Upon Death, Disability, ERA
-## Distributions
-In-Service Distributions at Age 59.5
-Sources Available for In-Service Distributions at Age 59.5
-Hardship Distributions
-Sources Available for Hardship Distributions
-Loans Allowed
-Number of Loans Allowed at a Time
-Loan Rate of Interest
-## Administration
-Top Paid Group Applicable
-Owner/Trustee Name
-Trustee Title
-Will a Recipient be entitled to request a Direct In-Plan Roth Rollover`;
-
-  function parseDisplayOrder(md) { const lines = md.split('\n'), fields = []; let grp = null; lines.forEach(l => { l = l.trim(); if (!l) return; if (l.startsWith('##')) grp = l.replace(/^#+\s*/, '').trim(); else if (grp) fields.push({ group: grp, fieldName: l }); }); return fields; }
-  function buildRowLookup(rows) { const lk = {}; rows.forEach(r => { if (r && typeof r.label === 'string') lk[r.label] = r; }); return lk; }
-  function isCertified(status) { const st = (status || '').toUpperCase(); return st === 'CERTIFIED' || st === 'OK' || st === ''; }
-  function getStatusClass(status) { const st = (status || '').toUpperCase(); if (st === 'CERTIFIED' || st === 'OK') return 'certified'; if (st === 'AMBIGUOUS') return 'ambiguous'; if (st === 'CONFLICT') return 'conflict'; if (st === 'SILENT' || st === 'NOT_FOUND') return 'silent'; return 'uncertain'; }
+  document.getElementById('results-placeholder').classList.add('hidden');
+  document.getElementById('results-loading').classList.remove('hidden');
+  document.getElementById('results-table-container').classList.add('hidden');
+  document.getElementById('export-section').classList.add('hidden');
   
-  function computeCoverage(rows, displayOrder) {
-    const lk = buildRowLookup(rows); let cert = 0, rev = 0, sil = 0;
-    displayOrder.forEach(item => { const r = lk[item.fieldName], st = (r?.status || '').toUpperCase(), v = r?.value || ''; if (st === 'CERTIFIED' || st === 'OK' || (v && !st)) cert++; else if (st === 'SILENT' || st === 'NOT_FOUND' || !v) sil++; else rev++; });
-    return { certified: cert, review: rev, silent: sil };
+  processBtn.disabled = true;
+  btnText.textContent = 'Processing...';
+  status.textContent = 'Reading PDF...';
+
+  try {
+    const base64 = await fileToBase64(selectedFile);
+    status.textContent = `Sending to ${modelSelect.options[modelSelect.selectedIndex].text}...`;
+
+    const response = await fetch(`${WORKER_URL}/extract`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        pdf_base64: base64,
+        model: modelSelect.value
+      })
+    });
+
+    if (!response.ok) {
+      const err = await response.json();
+      throw new Error(err.error || `HTTP ${response.status}`);
+    }
+
+    const data = await response.json();
+    extractionResults = data.rows;
+    
+    renderResults(data.rows);
+    status.textContent = `✅ Extracted ${data.rows.length} fields using ${data.model_used}`;
+    
+    document.getElementById('results-loading').classList.add('hidden');
+    document.getElementById('results-table-container').classList.remove('hidden');
+    document.getElementById('export-section').classList.remove('hidden');
+
+  } catch (error) {
+    console.error(error);
+    status.innerHTML = `<span class="text-red-400">❌ Error: ${error.message}</span>`;
+    document.getElementById('results-loading').classList.add('hidden');
+    document.getElementById('results-placeholder').classList.remove('hidden');
+  } finally {
+    processBtn.disabled = false;
+    btnText.textContent = '🚀 Extract Plan Data';
   }
+});
+
+function fileToBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const base64 = reader.result.split(',')[1];
+      resolve(base64);
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+const FIELD_ORDER = [
+  { section: 'Company Information', fields: ['Company Name', 'Company Street', 'Company Street2', 'City, State, ZIP', 'Company Telephone', 'EIN', 'Form of Business', 'Entity Type'] },
+  { section: 'Corporate Details', fields: ["Employer's Tax Year End", 'Plan Year End', 'Related Employers', 'Multiple Employer Plan'] },
+  { section: 'Plan Information', fields: ['Plan Name', 'Original Effective Date', 'Restatement Effective Date', 'Plan Number', 'Type of Plan'] },
+  { section: 'Eligibility', fields: ['Service Requirement', 'Minimum Age Requirement', 'Entry Date', 'Are Union Employees Excluded?', 'Are Part time Employees Excluded?'] },
+  { section: 'Contributions', fields: ['Salary Deferrals', 'Roth Deferrals', 'Matching Contributions', 'Matching Contribution Formula', 'Automatic Deferral Election'] },
+  { section: 'Safe Harbor', fields: ['Safe Harbor 401(k) Plan', 'Safe Harbor Type', 'Safe Harbor Formula'] },
+  { section: 'Vesting', fields: ['Normal Retirement Age', 'Vesting Schedule'] },
+  { section: 'Distributions', fields: ['Hardship Distributions', 'Loans Allowed'] }
+];
+
+function renderResults(rows) {
+  const lookup = {};
+  rows.forEach(r => { if (r.label) lookup[r.label] = r; });
+
+  let html = '<table class="results-table"><thead><tr><th>Field</th><th>Value</th></tr></thead><tbody>';
   
-  function renderCoverage(rows) {
-    const bar = qs('#coverage-bar'); if (!bar) return;
-    const c = computeCoverage(rows, parseDisplayOrder(displayOrderMD));
-    bar.innerHTML = `<div class="coverage-pill certified">✓ Certified: ${c.certified}</div><div class="coverage-pill review">⚠ Review: ${c.review}</div><div class="coverage-pill silent">— Silent: ${c.silent}</div>`;
-    bar.classList.remove('hidden');
-  }
-
-  function buildHtmlTable(rows) {
-    const displayOrder = parseDisplayOrder(displayOrderMD), rowLookup = buildRowLookup(rows);
-    let html = '<table class="results-table"><thead><tr><th>Field Name</th><th>Value</th></tr></thead>', currentGroup = null;
-    displayOrder.forEach(item => {
-      const rowObj = rowLookup[item.fieldName], rawValue = rowObj?.value ?? '', status = rowObj?.status || '', reason = rowObj?.reason || '', evidence = Array.isArray(rowObj?.evidence) ? rowObj.evidence : [];
-      const value = (typeof rawValue === 'string') ? rawValue.trim() : rawValue, certified = isCertified(status), statusClass = getStatusClass(status);
-      const valueExists = value !== null && value !== undefined && value !== '';
-      if (item.group !== currentGroup) { if (currentGroup !== null) html += '</tbody>'; currentGroup = item.group; html += `<tbody><tr class="section-header-row"><td colspan="2">${escapeHtml(currentGroup)}</td></tr>`; }
-      let statusBadge = ''; if (!certified && status) { statusBadge = `<span class="status-badge ${statusClass}">${escapeHtml(status)}</span>`; if (reason) statusBadge += `<span style="margin-left: 0.5rem; font-size: 0.75rem; color: #94A3B8;">${escapeHtml(reason)}</span>`; }
-      let sourceBtn = ''; if (certified && evidence.length > 0 && valueExists) { const evData = JSON.stringify({ field: item.fieldName, evidence: evidence }); sourceBtn = `<button class="source-btn" onclick='window.showEvidence(${JSON.stringify(evData)})'>Source</button>`; }
-      html += `<tr class="data-row"><td class="field-cell">${escapeHtml(item.fieldName)}</td><td class="value-cell ${valueExists ? '' : 'empty-value'}"><div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 0.75rem;"><div style="flex: 1; min-width: 0;">${valueExists ? escapeHtml(value) : ''}${!valueExists && statusBadge ? `<div style="margin-top: 0.25rem;">${statusBadge}</div>` : ''}</div>${sourceBtn ? `<div style="flex-shrink: 0;">${sourceBtn}</div>` : ''}</div></td></tr>`;
+  FIELD_ORDER.forEach(section => {
+    html += `<tr class="section-row"><td colspan="2">${section.section}</td></tr>`;
+    section.fields.forEach(field => {
+      const row = lookup[field];
+      const value = row?.value || '';
+      const statusClass = (row?.status === 'CERTIFIED' && value) ? 'certified' : 'silent';
+      html += `<tr class="data-row">
+        <td>${escapeHtml(field)}</td>
+        <td>${value ? escapeHtml(value) : '<span class="text-[#64748B] italic">-</span>'}
+          ${value ? `<span class="status-badge ${statusClass} ml-2">${row?.status || ''}</span>` : ''}
+        </td>
+      </tr>`;
     });
-    if (currentGroup !== null) html += '</tbody>'; html += '</table>'; return html;
-  }
+  });
+  
+  html += '</tbody></table>';
+  document.getElementById('results-table-container').innerHTML = html;
+}
 
-  function renderData(rows) { const rt = qs('#results-table'); if (!rt) return; lastHtmlTableString = buildHtmlTable(rows); lastExtractionRows = rows; rt.innerHTML = lastHtmlTableString; renderCoverage(rows); }
+function escapeHtml(str) {
+  if (!str) return '';
+  return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
 
-  window.showEvidence = function(dataStr) {
-    try {
-      const data = typeof dataStr === 'string' ? JSON.parse(dataStr) : dataStr, modal = document.getElementById('evidence-modal'), body = document.getElementById('evidence-body');
-      if (!modal || !body) return;
-      body.innerHTML = `<div style="margin-bottom: 1rem;"><div style="font-size: 1.125rem; font-weight: 600; color: white;">${escapeHtml(data.field)}</div></div>${data.evidence.map(ev => `<div class="evidence-card"><div class="evidence-meta">${ev.page ? `Page ${ev.page}` : ''}</div><div class="evidence-quote">"${escapeHtml(ev.quote || '')}"</div></div>`).join('')}`;
-      modal.classList.remove('hidden'); modal.style.display = 'flex';
-    } catch (e) { console.error(e); }
-  };
-  window.closeEvidenceModal = function() { const m = document.getElementById('evidence-modal'); if (m) { m.classList.add('hidden'); m.style.display = 'none'; } };
+function exportCSV() {
+  if (!extractionResults) return;
+  let csv = 'Field,Value,Status\n';
+  extractionResults.forEach(r => {
+    csv += `"${r.label || ''}","${(r.value || '').replace(/"/g, '""')}","${r.status || ''}"\n`;
+  });
+  downloadFile('plan_extraction.csv', 'text/csv', csv);
+}
 
-  // Convert ArrayBuffer to base64
-  function arrayBufferToBase64(buffer) {
-    const bytes = new Uint8Array(buffer);
-    let binary = '';
-    const chunkSize = 32768;
-    for (let i = 0; i < bytes.length; i += chunkSize) {
-      const chunk = bytes.subarray(i, Math.min(i + chunkSize, bytes.length));
-      binary += String.fromCharCode.apply(null, chunk);
-    }
-    return btoa(binary);
-  }
+function copyResults() {
+  if (!extractionResults) return;
+  const text = extractionResults.map(r => `${r.label}: ${r.value || ''}`).join('\n');
+  navigator.clipboard.writeText(text).then(() => alert('Copied!'));
+}
 
-  async function callExtractorBackend(pdfBase64, model) {
-    const payload = { pdf_base64: pdfBase64, model: model, strict_mode: true, return_evidence: true };
-    
-    const resp = await fetch(`${EXTRACTOR_API_BASE}/extract-plan`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload)
-    });
-    
-    if (!resp.ok) {
-      const text = await resp.text();
-      throw new Error(`API error ${resp.status}: ${text.slice(0, 200)}`);
-    }
-    
-    return await resp.json();
-  }
-
-  function ensureExtractionAvailable() { if (!lastExtractionRows || lastExtractionRows.length === 0) { alert("No extraction available."); return false; } return true; }
-  function downloadFile(name, type, content) { const blob = new Blob([content], { type }), url = URL.createObjectURL(blob), a = document.createElement('a'); a.href = url; a.download = name; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url); }
-  async function handleExportCopy() { if (!ensureExtractionAvailable()) return; try { await navigator.clipboard.writeText(lastHtmlTableString); alert("Copied!"); } catch (e) { alert("Copy failed"); } }
-  function handleExportHtml() { if (!ensureExtractionAvailable()) return; downloadFile("plan_extraction.html", "text/html", `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Plan Extraction</title></head><body>${lastHtmlTableString}</body></html>`); }
-  function handleExportCsv() { if (!ensureExtractionAvailable()) return; const displayOrder = parseDisplayOrder(displayOrderMD), rowLookup = buildRowLookup(lastExtractionRows); let csv = 'Field,Value,Status\n'; displayOrder.forEach(item => { const r = rowLookup[item.fieldName]; csv += `"${item.fieldName}","${(r?.value||'').replace(/"/g,'""')}","${r?.status||''}"\n`; }); downloadFile("plan_extraction.csv", "text/csv", csv); }
-  function handleExportPdf() { if (!ensureExtractionAvailable()) return; const displayOrder = parseDisplayOrder(displayOrderMD), rowLookup = buildRowLookup(lastExtractionRows); let html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Plan Report</title><style>body{font-family:sans-serif;font-size:11px;}table{width:100%;border-collapse:collapse;}th{background:#0b5fff;color:white;padding:10px;}td{padding:8px;border:1px solid #ccc;}.section{background:#f1f5f9;color:#0b5fff;font-weight:700;}</style></head><body><h1 style="color:#0b5fff;">Plan Extraction Report</h1><p style="color:#666;">Extracted via ${lastExtractionSource}</p><table><thead><tr><th>Field</th><th>Value</th></tr></thead><tbody>`; let grp = null; displayOrder.forEach(item => { const r = rowLookup[item.fieldName]; if (item.group !== grp) { grp = item.group; html += `<tr><td colspan="2" class="section">${grp}</td></tr>`; } html += `<tr><td>${item.fieldName}</td><td>${r?.value||''}</td></tr>`; }); html += `</tbody></table></body></html>`; const w = window.open('', '_blank'); w.document.write(html); w.document.close(); setTimeout(() => w.print(), 250); }
-
-  let selectedFile = null;
-
-  function wireFileUpload() {
-    const fi = qs('#file-upload'); if (!fi) return;
-    
-    fi.addEventListener('change', (event) => {
-      const file = event.target.files[0];
-      if (!file || file.type !== 'application/pdf') { alert("Please select a PDF file."); return; }
-      selectedFile = file;
-      const fileInfoPanel = qs('#selected-file-info'), fileName = qs('#selected-file-name'), fileSize = qs('#selected-file-size');
-      if (fileInfoPanel) fileInfoPanel.classList.remove('hidden');
-      if (fileName) fileName.textContent = file.name;
-      if (fileSize) fileSize.textContent = `Size: ${(file.size / 1024).toFixed(1)} KB`;
-      updateStatus("File selected. Click Process when ready.");
-    });
-    
-    const clearBtn = qs('#clear-file-btn');
-    if (clearBtn) clearBtn.addEventListener('click', () => {
-      selectedFile = null;
-      const fi = qs('#file-upload'); if (fi) fi.value = '';
-      qs('#selected-file-info')?.classList.add('hidden');
-      updateStatus("Ready - Select a PDF to begin");
-    });
-    
-    const processBtn = qs('#process-btn');
-    if (processBtn) {
-      processBtn.addEventListener('click', async () => {
-        if (!selectedFile) { alert("Select a file first."); return; }
-        
-        qs('#error-box')?.classList.add('hidden');
-        processBtn.disabled = true;
-        processBtn.innerHTML = '<span class="loader-dark"></span> Processing...';
-        showOverlay();
-        updateStatus("Reading PDF file...");
-        
-        const reader = new FileReader();
-        reader.onload = async (e) => {
-          try {
-            const pdfBase64 = arrayBufferToBase64(e.target.result);
-            const model = qs('#llm-model')?.value || 'claude-sonnet-4-5';
-            
-            updateStatus("Sending to AI for visual analysis...");
-            console.log(`[Adopt(k)] Sending ${(pdfBase64.length / 1024).toFixed(0)} KB PDF to ${model}`);
-            
-            const data = await callExtractorBackend(pdfBase64, model);
-            
-            lastExtractionSource = data.model_used || model;
-            renderData(data.rows);
-            hideOverlay();
-            updateStatus(`Complete! Analyzed with ${lastExtractionSource}`);
-            
-            // Reset
-            selectedFile = null;
-            qs('#selected-file-info')?.classList.add('hidden');
-            qs('#file-upload').value = '';
-            
-          } catch (err) {
-            console.error(err);
-            updateStatus("Error: " + err.message, true);
-            showError(err.message);
-            hideOverlay();
-          } finally {
-            processBtn.disabled = false;
-            processBtn.innerHTML = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg> Click to Process Document';
-          }
-        };
-        reader.onerror = () => { showError("Error reading file."); hideOverlay(); processBtn.disabled = false; };
-        reader.readAsArrayBuffer(selectedFile);
-      });
-    }
-  }
-
-  function wireButtons() {
-    qs('#export-copy-btn')?.addEventListener('click', handleExportCopy);
-    qs('#export-html-btn')?.addEventListener('click', handleExportHtml);
-    qs('#export-pdf-btn')?.addEventListener('click', handleExportPdf);
-    qs('#export-csv-btn')?.addEventListener('click', handleExportCsv);
-
-    const helpModal = document.getElementById('help-modal');
-    qs('#how-to-use-btn')?.addEventListener('click', () => { helpModal.classList.remove('hidden'); helpModal.style.display = 'flex'; });
-    document.getElementById('help-modal-close')?.addEventListener('click', () => { helpModal.classList.add('hidden'); });
-    document.getElementById('help-modal-close-2')?.addEventListener('click', () => { helpModal.classList.add('hidden'); });
-
-    const whatsNewModal = document.getElementById('whats-new-modal');
-    qs('#whats-new-btn')?.addEventListener('click', () => { whatsNewModal.classList.remove('hidden'); whatsNewModal.style.display = 'flex'; });
-    document.getElementById('whats-new-modal-close')?.addEventListener('click', () => { whatsNewModal.classList.add('hidden'); });
-    document.getElementById('whats-new-close-btn')?.addEventListener('click', () => { whatsNewModal.classList.add('hidden'); });
-
-    document.getElementById('evidence-modal-close')?.addEventListener('click', window.closeEvidenceModal);
-    document.getElementById('evidence-close-btn')?.addEventListener('click', window.closeEvidenceModal);
-  }
-
-  function init() { hideOverlay(); wireFileUpload(); wireButtons(); }
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
-  else init();
-})();
+function downloadFile(name, type, content) {
+  const blob = new Blob([content], { type });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = name;
+  document.body.appendChild(a); a.click(); a.remove();
+  URL.revokeObjectURL(url);
+}
 </script>
 </body>
 </html>
