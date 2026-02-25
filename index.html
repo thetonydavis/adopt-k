@@ -6,279 +6,134 @@
   <title>Adopt(k) - Adoption Agreement Parser</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    body { background: #0F172A; margin: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
-    .upload-area { border: 2px dashed #334155; background: #1E293B; transition: all 0.2s; cursor: pointer; }
-    .upload-area:hover { border-color: #0b5fff; background: #1e3a5f; }
-    .upload-area.dragover { border-color: #10b981; background: #064e3b; }
-    .results-table { width: 100%; border-collapse: collapse; }
-    .results-table th { background: #0b5fff; color: white; padding: 12px 16px; text-align: left; }
-    .results-table td { padding: 10px 16px; border-bottom: 1px solid #334155; color: #E2E8F0; }
-    .results-table .section-row td { background: linear-gradient(90deg, #1e3a5f 0%, #1E293B 100%); color: #0b5fff; font-weight: 700; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.05em; border-left: 3px solid #0b5fff; }
-    .results-table .data-row:hover td { background: #1e3a5f; }
-    .loader { width: 48px; height: 48px; border: 4px solid #334155; border-top-color: #0b5fff; border-radius: 50%; animation: spin 1s linear infinite; }
+    body { background: #0F172A; font-family: system-ui, sans-serif; }
+    .loader { width: 40px; height: 40px; border: 4px solid #334155; border-top-color: #0b5fff; border-radius: 50%; animation: spin 1s linear infinite; }
     @keyframes spin { to { transform: rotate(360deg); } }
-    .status-badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 700; text-transform: uppercase; }
-    .status-badge.certified { background: rgba(16, 185, 129, 0.2); color: #10b981; }
-    .status-badge.silent { background: rgba(100, 116, 139, 0.2); color: #64748B; }
   </style>
 </head>
-<body>
-<div class="min-h-screen p-8">
-  <div class="max-w-6xl mx-auto">
-    <!-- Header -->
-    <div class="mb-8">
-      <h1 class="text-4xl font-bold text-white">Adopt<span class="text-[#0b5fff]">(k)</span></h1>
-      <p class="text-[#94A3B8] mt-2">AI Vision-Powered Adoption Agreement Parser</p>
-    </div>
+<body class="min-h-screen p-8">
+<div class="max-w-4xl mx-auto">
+  <h1 class="text-4xl font-bold text-white mb-2">Adopt<span class="text-blue-500">(k)</span></h1>
+  <p class="text-gray-400 mb-8">AI Vision-Powered Adoption Agreement Parser</p>
 
-    <!-- Upload Section -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-      <div class="lg:col-span-1 bg-[#1E293B] rounded-xl p-6 border border-[#334155]">
-        <h2 class="text-sm font-semibold text-[#0b5fff] uppercase tracking-wider mb-4">1. Select Model</h2>
-        <select id="model-select" class="w-full px-3 py-2 bg-[#0F172A] border border-[#334155] rounded-lg text-white focus:outline-none focus:border-[#0b5fff]">
-          <option value="claude-sonnet-4-6">👁️ Claude Sonnet 4.6 (Best)</option>
-          <option value="claude-opus-4-6">👁️ Claude Opus 4.6 (Premium)</option>
-          <option value="gemini-3-pro">👁️ Gemini 3 Pro</option>
-          <option value="gpt-5.2">👁️ GPT-5.2</option>
+  <div class="bg-slate-800 rounded-xl p-6 mb-6 border border-slate-700">
+    <div class="grid md:grid-cols-2 gap-4 mb-4">
+      <div>
+        <label class="block text-blue-400 text-sm font-semibold mb-2">Model</label>
+        <select id="model" class="w-full p-3 bg-slate-900 border border-slate-600 rounded-lg text-white">
+          <option value="claude-sonnet-4-6">Claude Sonnet 4.6</option>
+          <option value="claude-opus-4-6">Claude Opus 4.6</option>
+          <option value="gemini-3-pro">Gemini 3 Pro</option>
+          <option value="gpt-5.2">GPT-5.2</option>
         </select>
-        <p class="text-xs text-[#64748B] mt-2">All models use vision to see checkboxes directly</p>
-
-        <h2 class="text-sm font-semibold text-[#0b5fff] uppercase tracking-wider mb-4 mt-6">2. Upload PDF</h2>
-        <label id="upload-area" class="upload-area flex flex-col items-center justify-center w-full h-40 rounded-lg">
-          <svg class="w-10 h-10 mb-3 text-[#0b5fff]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
-          </svg>
-          <p class="text-sm text-[#94A3B8]"><span class="font-semibold text-white" id="upload-text">Click or drag PDF here</span></p>
-          <input id="file-input" type="file" class="hidden" accept=".pdf" />
-        </label>
-
-        <div id="file-info" class="hidden mt-4 p-3 bg-[#0F172A] rounded-lg border border-[#334155]">
-          <div class="flex justify-between items-center">
-            <span id="file-name" class="text-sm text-white truncate"></span>
-            <button id="clear-btn" class="text-xs text-[#94A3B8] hover:text-red-400">✕</button>
-          </div>
-          <div id="file-size" class="text-xs text-[#64748B] mt-1"></div>
-        </div>
-
-        <button id="process-btn" class="w-full mt-4 py-3 bg-[#10b981] hover:bg-[#059669] text-white font-semibold rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed" disabled>
-          <span id="btn-text">Select a PDF first</span>
-        </button>
-
-        <div id="status" class="mt-4 text-sm text-[#94A3B8]"></div>
       </div>
-
-      <!-- Results Section -->
-      <div class="lg:col-span-2 bg-[#1E293B] rounded-xl border border-[#334155] overflow-hidden">
-        <div class="bg-gradient-to-r from-[#0b5fff] to-[#0047cc] p-4">
-          <h2 class="text-lg font-bold text-white">Extraction Results</h2>
-          <p class="text-sm text-white/80">AI visually analyzes your PDF - sees checkboxes like a human</p>
-        </div>
-        
-        <div id="results-container" class="p-6">
-          <div id="results-placeholder" class="text-center py-16 text-[#64748B]">
-            <svg class="w-16 h-16 mx-auto mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-            </svg>
-            <p>Upload a PDF to extract plan data</p>
-          </div>
-          
-          <div id="results-loading" class="hidden text-center py-16">
-            <div class="loader mx-auto mb-4"></div>
-            <p class="text-white font-medium">Analyzing document with AI vision...</p>
-            <p class="text-sm text-[#94A3B8] mt-1">The AI is looking at your PDF like a human would</p>
-          </div>
-          
-          <div id="results-table-container" class="hidden overflow-x-auto"></div>
-        </div>
+      <div>
+        <label class="block text-blue-400 text-sm font-semibold mb-2">PDF File</label>
+        <input type="file" id="pdfFile" accept=".pdf" class="w-full p-2 bg-slate-900 border border-slate-600 rounded-lg text-white file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:bg-blue-600 file:text-white file:cursor-pointer">
       </div>
     </div>
-
-    <!-- Export Buttons -->
-    <div id="export-section" class="hidden bg-[#1E293B] rounded-xl p-4 border border-[#334155]">
-      <div class="flex flex-wrap gap-3">
-        <button onclick="exportCSV()" class="px-4 py-2 text-sm border border-[#0b5fff] text-[#0b5fff] rounded-lg hover:bg-[#0b5fff] hover:text-white transition">📊 Export CSV</button>
-        <button onclick="copyResults()" class="px-4 py-2 text-sm border border-[#0b5fff] text-[#0b5fff] rounded-lg hover:bg-[#0b5fff] hover:text-white transition">📋 Copy</button>
-      </div>
-    </div>
+    <div id="fileStatus" class="text-gray-400 text-sm mb-4"></div>
+    <button id="extractBtn" onclick="extract()" class="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-lg disabled:opacity-50" disabled>
+      Select a PDF first
+    </button>
   </div>
+
+  <div id="loading" class="hidden bg-slate-800 rounded-xl p-8 text-center border border-slate-700">
+    <div class="loader mx-auto mb-4"></div>
+    <p class="text-white">Analyzing PDF with AI vision...</p>
+  </div>
+
+  <div id="results" class="hidden bg-slate-800 rounded-xl border border-slate-700 overflow-hidden">
+    <div class="bg-blue-600 p-4">
+      <h2 class="text-lg font-bold text-white">Extraction Results</h2>
+    </div>
+    <div id="resultsBody" class="p-4"></div>
+  </div>
+
+  <div id="error" class="hidden bg-red-900/50 border border-red-700 rounded-xl p-4 text-red-300"></div>
 </div>
 
 <script>
-const WORKER_URL = 'https://adoptk-vision.tony-e07.workers.dev';
+var WORKER = 'https://adoptk-vision.tony-e07.workers.dev';
+var pdfBase64 = null;
 
-let selectedFile = null;
-let extractionResults = null;
-
-const uploadArea = document.getElementById('upload-area');
-const fileInput = document.getElementById('file-input');
-const fileInfo = document.getElementById('file-info');
-const fileName = document.getElementById('file-name');
-const fileSize = document.getElementById('file-size');
-const clearBtn = document.getElementById('clear-btn');
-const processBtn = document.getElementById('process-btn');
-const btnText = document.getElementById('btn-text');
-const status = document.getElementById('status');
-const modelSelect = document.getElementById('model-select');
-
-uploadArea.addEventListener('click', () => fileInput.click());
-uploadArea.addEventListener('dragover', (e) => { e.preventDefault(); uploadArea.classList.add('dragover'); });
-uploadArea.addEventListener('dragleave', () => uploadArea.classList.remove('dragover'));
-uploadArea.addEventListener('drop', (e) => {
-  e.preventDefault();
-  uploadArea.classList.remove('dragover');
-  const file = e.dataTransfer.files[0];
-  if (file && file.type === 'application/pdf') handleFile(file);
-});
-
-fileInput.addEventListener('change', (e) => {
-  if (e.target.files[0]) handleFile(e.target.files[0]);
-});
-
-clearBtn.addEventListener('click', () => {
-  selectedFile = null;
-  fileInput.value = '';
-  fileInfo.classList.add('hidden');
-  processBtn.disabled = true;
-  btnText.textContent = 'Select a PDF first';
-  document.getElementById('upload-text').textContent = 'Click or drag PDF here';
-});
-
-function handleFile(file) {
-  selectedFile = file;
-  fileName.textContent = file.name;
-  fileSize.textContent = `${(file.size / 1024).toFixed(1)} KB`;
-  fileInfo.classList.remove('hidden');
-  processBtn.disabled = false;
-  btnText.textContent = '🚀 Extract Plan Data';
-  document.getElementById('upload-text').textContent = file.name;
-}
-
-processBtn.addEventListener('click', async () => {
-  if (!selectedFile) return;
+document.getElementById('pdfFile').addEventListener('change', function(e) {
+  var file = e.target.files[0];
+  if (!file) return;
   
-  document.getElementById('results-placeholder').classList.add('hidden');
-  document.getElementById('results-loading').classList.remove('hidden');
-  document.getElementById('results-table-container').classList.add('hidden');
-  document.getElementById('export-section').classList.add('hidden');
+  document.getElementById('fileStatus').textContent = 'Reading: ' + file.name + ' (' + Math.round(file.size/1024) + ' KB)';
+  document.getElementById('extractBtn').disabled = true;
+  document.getElementById('extractBtn').textContent = 'Reading file...';
   
-  processBtn.disabled = true;
-  btnText.textContent = 'Processing...';
-  status.textContent = 'Reading PDF...';
+  var reader = new FileReader();
+  reader.onload = function(evt) {
+    pdfBase64 = evt.target.result.split(',')[1];
+    document.getElementById('fileStatus').textContent = 'Ready: ' + file.name;
+    document.getElementById('extractBtn').disabled = false;
+    document.getElementById('extractBtn').textContent = 'Extract Plan Data';
+  };
+  reader.onerror = function() {
+    document.getElementById('fileStatus').textContent = 'Error reading file';
+    document.getElementById('extractBtn').disabled = true;
+  };
+  reader.readAsDataURL(file);
+});
+
+async function extract() {
+  if (!pdfBase64) {
+    alert('Please select a PDF file first');
+    return;
+  }
+
+  document.getElementById('loading').classList.remove('hidden');
+  document.getElementById('results').classList.add('hidden');
+  document.getElementById('error').classList.add('hidden');
+  document.getElementById('extractBtn').disabled = true;
+  document.getElementById('extractBtn').textContent = 'Processing...';
 
   try {
-    const base64 = await fileToBase64(selectedFile);
-    status.textContent = `Sending to ${modelSelect.options[modelSelect.selectedIndex].text}...`;
-
-    const response = await fetch(`${WORKER_URL}/extract`, {
+    var response = await fetch(WORKER + '/extract', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        pdf_base64: base64,
-        model: modelSelect.value
+        pdf_base64: pdfBase64,
+        model: document.getElementById('model').value
       })
     });
 
+    var data = await response.json();
+    
     if (!response.ok) {
-      const err = await response.json();
-      throw new Error(err.error || `HTTP ${response.status}`);
+      throw new Error(data.error || 'Request failed');
     }
 
-    const data = await response.json();
-    extractionResults = data.rows;
-    
-    renderResults(data.rows);
-    status.textContent = `✅ Extracted ${data.rows.length} fields using ${data.model_used}`;
-    
-    document.getElementById('results-loading').classList.add('hidden');
-    document.getElementById('results-table-container').classList.remove('hidden');
-    document.getElementById('export-section').classList.remove('hidden');
+    showResults(data);
 
-  } catch (error) {
-    console.error(error);
-    status.innerHTML = `<span class="text-red-400">❌ Error: ${error.message}</span>`;
-    document.getElementById('results-loading').classList.add('hidden');
-    document.getElementById('results-placeholder').classList.remove('hidden');
+  } catch (err) {
+    document.getElementById('error').textContent = 'Error: ' + err.message;
+    document.getElementById('error').classList.remove('hidden');
   } finally {
-    processBtn.disabled = false;
-    btnText.textContent = '🚀 Extract Plan Data';
+    document.getElementById('loading').classList.add('hidden');
+    document.getElementById('extractBtn').disabled = false;
+    document.getElementById('extractBtn').textContent = 'Extract Plan Data';
   }
-});
-
-function fileToBase64(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => {
-      const base64 = reader.result.split(',')[1];
-      resolve(base64);
-    };
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
 }
 
-const FIELD_ORDER = [
-  { section: 'Company Information', fields: ['Company Name', 'Company Street', 'Company Street2', 'City, State, ZIP', 'Company Telephone', 'EIN', 'Form of Business', 'Entity Type'] },
-  { section: 'Corporate Details', fields: ["Employer's Tax Year End", 'Plan Year End', 'Related Employers', 'Multiple Employer Plan'] },
-  { section: 'Plan Information', fields: ['Plan Name', 'Original Effective Date', 'Restatement Effective Date', 'Plan Number', 'Type of Plan'] },
-  { section: 'Eligibility', fields: ['Service Requirement', 'Minimum Age Requirement', 'Entry Date', 'Are Union Employees Excluded?', 'Are Part time Employees Excluded?'] },
-  { section: 'Contributions', fields: ['Salary Deferrals', 'Roth Deferrals', 'Matching Contributions', 'Matching Contribution Formula', 'Automatic Deferral Election'] },
-  { section: 'Safe Harbor', fields: ['Safe Harbor 401(k) Plan', 'Safe Harbor Type', 'Safe Harbor Formula'] },
-  { section: 'Vesting', fields: ['Normal Retirement Age', 'Vesting Schedule'] },
-  { section: 'Distributions', fields: ['Hardship Distributions', 'Loans Allowed'] }
-];
-
-function renderResults(rows) {
-  const lookup = {};
-  rows.forEach(r => { if (r.label) lookup[r.label] = r; });
-
-  let html = '<table class="results-table"><thead><tr><th>Field</th><th>Value</th></tr></thead><tbody>';
+function showResults(data) {
+  var html = '<table class="w-full text-left"><thead><tr class="border-b border-slate-600"><th class="p-2 text-blue-400">Field</th><th class="p-2 text-blue-400">Value</th></tr></thead><tbody>';
   
-  FIELD_ORDER.forEach(section => {
-    html += `<tr class="section-row"><td colspan="2">${section.section}</td></tr>`;
-    section.fields.forEach(field => {
-      const row = lookup[field];
-      const value = row?.value || '';
-      const statusClass = (row?.status === 'CERTIFIED' && value) ? 'certified' : 'silent';
-      html += `<tr class="data-row">
-        <td>${escapeHtml(field)}</td>
-        <td>${value ? escapeHtml(value) : '<span class="text-[#64748B] italic">-</span>'}
-          ${value ? `<span class="status-badge ${statusClass} ml-2">${row?.status || ''}</span>` : ''}
-        </td>
-      </tr>`;
-    });
+  data.rows.forEach(function(row) {
+    html += '<tr class="border-b border-slate-700">';
+    html += '<td class="p-2 text-gray-300">' + (row.label || '') + '</td>';
+    html += '<td class="p-2 text-white">' + (row.value || '-') + '</td>';
+    html += '</tr>';
   });
   
   html += '</tbody></table>';
-  document.getElementById('results-table-container').innerHTML = html;
-}
-
-function escapeHtml(str) {
-  if (!str) return '';
-  return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-}
-
-function exportCSV() {
-  if (!extractionResults) return;
-  let csv = 'Field,Value,Status\n';
-  extractionResults.forEach(r => {
-    csv += `"${r.label || ''}","${(r.value || '').replace(/"/g, '""')}","${r.status || ''}"\n`;
-  });
-  downloadFile('plan_extraction.csv', 'text/csv', csv);
-}
-
-function copyResults() {
-  if (!extractionResults) return;
-  const text = extractionResults.map(r => `${r.label}: ${r.value || ''}`).join('\n');
-  navigator.clipboard.writeText(text).then(() => alert('Copied!'));
-}
-
-function downloadFile(name, type, content) {
-  const blob = new Blob([content], { type });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url; a.download = name;
-  document.body.appendChild(a); a.click(); a.remove();
-  URL.revokeObjectURL(url);
+  html += '<p class="text-gray-500 text-sm mt-4">Model: ' + data.model_used + ' | Fields: ' + data.rows.length + '</p>';
+  
+  document.getElementById('resultsBody').innerHTML = html;
+  document.getElementById('results').classList.remove('hidden');
 }
 </script>
 </body>
