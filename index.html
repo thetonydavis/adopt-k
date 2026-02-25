@@ -70,6 +70,11 @@
     .status-badge.silent { background: rgba(100, 116, 139, 0.2); color: #64748B; }
     .status-badge.uncertain { background: rgba(139, 92, 246, 0.2); color: #8b5cf6; }
 
+    /* OCR Badge */
+    .ocr-badge { display: inline-flex; align-items: center; gap: 0.25rem; padding: 0.125rem 0.5rem; border-radius: 9999px; font-size: 0.625rem; font-weight: 600; }
+    .ocr-badge.active { background: rgba(16, 185, 129, 0.2); color: #10b981; }
+    .ocr-badge.inactive { background: rgba(100, 116, 139, 0.2); color: #64748B; }
+
     /* Source Button */
     .source-btn { background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.6875rem; font-weight: 600; cursor: pointer; transition: all 0.15s; white-space: nowrap; }
     .source-btn:hover { background: rgba(16, 185, 129, 0.25); border-color: #10b981; }
@@ -106,18 +111,6 @@
     .status-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem; margin: 1rem 0; }
     .status-explain-card { background: #0F172A; border: 1px solid #334155; border-radius: 0.5rem; padding: 0.75rem; }
     .status-explain-card .status-text { font-size: 0.75rem; color: #94A3B8; margin-top: 0.5rem; }
-
-    /* DPF Modal */
-    .dpf-description { color: #94A3B8; font-size: 0.875rem; margin-bottom: 1.5rem; }
-    .dpf-guarantee { background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 0.5rem; padding: 1rem; margin-bottom: 1.5rem; display: flex; align-items: flex-start; gap: 0.75rem; }
-    .dpf-guarantee-icon { color: #10b981; flex-shrink: 0; }
-    .dpf-guarantee-title { color: white; font-weight: 600; font-size: 0.875rem; }
-    .dpf-guarantee-text { color: #94A3B8; font-size: 0.8125rem; }
-    .dpf-categories { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; }
-    .dpf-category { background: #0F172A; border: 1px solid #334155; border-radius: 0.5rem; padding: 1.25rem; text-align: center; }
-    .dpf-category-icon { width: 48px; height: 48px; background: #0b5fff; border-radius: 0.5rem; display: flex; align-items: center; justify-content: center; margin: 0 auto 0.75rem; font-size: 1.25rem; }
-    .dpf-category-title { color: white; font-weight: 600; font-size: 0.875rem; }
-    .dpf-category-desc { color: #64748B; font-size: 0.75rem; margin-top: 0.25rem; }
 
     /* Clock Spinner */
     .clock-spinner {
@@ -215,7 +208,7 @@
           </div>
           <div class="nav-btn-content">
             <div class="nav-btn-title">What's New</div>
-            <div class="nav-btn-subtitle">Certification system</div>
+            <div class="nav-btn-subtitle">CloudConvert OCR</div>
           </div>
           <span class="nav-btn-badge">NEW</span>
         </button>
@@ -262,6 +255,9 @@
           <div id="status-msg" class="text-sm flex items-center gap-3">
             <span class="loader-dark" id="py-loader"></span>
             <span id="status-text" class="text-white">Initializing System...</span>
+          </div>
+          <div id="ocr-status" class="mt-2 hidden">
+            <span id="ocr-badge" class="ocr-badge inactive">☁️ OCR: Checking...</span>
           </div>
           <div id="file-info" class="text-xs text-[#94A3B8] mt-3 hidden"></div>
         </div>
@@ -316,7 +312,6 @@
             <button id="export-html-btn" class="px-4 py-2 text-sm font-medium rounded-md border border-[#0b5fff] text-[#0b5fff] bg-transparent hover:bg-[#0b5fff] hover:text-white transition">🌐 HTML Table</button>
             <button id="export-pdf-btn" class="px-4 py-2 text-sm font-medium rounded-md border border-[#0b5fff] text-[#0b5fff] bg-transparent hover:bg-[#0b5fff] hover:text-white transition">📄 PDF Report</button>
             <button id="export-csv-btn" class="px-4 py-2 text-sm font-medium rounded-md border border-[#0b5fff] text-[#0b5fff] bg-transparent hover:bg-[#0b5fff] hover:text-white transition">📊 CSV file</button>
-            <button id="export-nextstep-btn" class="px-4 py-2 text-sm font-medium rounded-md bg-[#0b5fff] text-white hover:bg-[#0047cc] transition">📄 Generate Pre-Filled DPF</button>
           </div>
         </div>
       </div>
@@ -383,18 +378,21 @@
           <button id="whats-new-modal-close" class="modal-close">&times;</button>
         </div>
         <div class="modal-body">
-          <h4>🔒 Certification System</h4>
-          <p>Every extracted value now comes with a certification status. If Adopt(k) returns a value, you can trust it's correct—no double-checking needed.</p>
+          <h4>☁️ CloudConvert OCR Integration</h4>
+          <p>Adopt(k) now uses CloudConvert OCR for enhanced checkbox detection. Scanned PDFs and complex forms are now processed with better accuracy.</p>
           
           <div class="highlight-box">
-            <strong>100% Correct or Silent:</strong> We'd rather leave a field blank than give you uncertain data.
+            <strong>Better Checkbox Detection:</strong> Previously, checkboxes were extracted at the end of each page. Now they stay inline with their labels for accurate field matching.
           </div>
+
+          <h4>🔒 Certification System</h4>
+          <p>Every extracted value comes with a certification status. If Adopt(k) returns a value, you can trust it's correct—no double-checking needed.</p>
 
           <h4>📋 Source Evidence</h4>
           <p>Click the "Source" button on any certified field to see exactly where in the document we found that information, including page number and verbatim quote.</p>
 
           <h4>📊 Coverage Bar</h4>
-          <p>The new coverage bar shows at a glance how many fields were certified, need review, or are silent. Track extraction quality instantly.</p>
+          <p>The coverage bar shows at a glance how many fields were certified, need review, or are silent.</p>
 
           <div class="tip-box">
             <strong>Coming Soon:</strong> Batch processing, custom field mapping, and integration with your existing TPA workflows.
@@ -420,65 +418,54 @@
       </div>
     </div>
 
-    <!-- DPF MODAL -->
-    <div id="dpf-modal" class="modal-backdrop hidden">
-      <div class="modal-container" style="max-width: 700px;">
-        <div class="modal-header">
-          <h3>📄 Generate Pre-Filled DPF</h3>
-          <button id="dpf-modal-close" class="modal-close">&times;</button>
-        </div>
-        <div class="modal-body">
-          <p class="dpf-description">Generate a Document Preparation Form (DPF) pre-filled with the certified extracted values. Only verified data will be included—uncertain fields are left blank for manual review.</p>
-          
-          <div class="dpf-guarantee">
-            <div class="dpf-guarantee-icon">
-              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
-            </div>
-            <div>
-              <div class="dpf-guarantee-title">Quality Guarantee</div>
-              <div class="dpf-guarantee-text">Every value in the generated DPF has been certified from the source document. No guessing, no assumptions.</div>
-            </div>
-          </div>
-
-          <div class="dpf-categories">
-            <div class="dpf-category">
-              <div class="dpf-category-icon">🏢</div>
-              <div class="dpf-category-title">Company Info</div>
-              <div class="dpf-category-desc">Name, address, EIN, entity type</div>
-            </div>
-            <div class="dpf-category">
-              <div class="dpf-category-icon">📋</div>
-              <div class="dpf-category-title">Plan Details</div>
-              <div class="dpf-category-desc">Name, dates, plan number</div>
-            </div>
-            <div class="dpf-category">
-              <div class="dpf-category-icon">👥</div>
-              <div class="dpf-category-title">Eligibility</div>
-              <div class="dpf-category-desc">Service, age, entry dates</div>
-            </div>
-            <div class="dpf-category">
-              <div class="dpf-category-icon">💰</div>
-              <div class="dpf-category-title">Contributions</div>
-              <div class="dpf-category-desc">Match, safe harbor, vesting</div>
-            </div>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button id="dpf-cancel-btn" class="modal-btn-secondary">Cancel</button>
-          <button id="dpf-generate-btn" class="modal-btn-primary">Generate DPF</button>
-        </div>
-      </div>
-    </div>
   </main>
 </div>
 
 <script>
 (function() {
-  const EXTRACTOR_API_BASE = "https://docuwaivz-plan-extractor-931273582090.us-west1.run.app";
+  const EXTRACTOR_API_BASE = "https://adoptk-extractor-931273582090.us-west1.run.app";
+  const PARSEK_OCR_WORKER_URL = 'https://parsek-ocr-worker.tony-e07.workers.dev';
+  
   let pyodideInstance = null, pdfjsLibInstance = null, initializationInProgress = false;
-  let lastExtractionRows = null, lastHtmlTableString = "";
+  let lastExtractionRows = null, lastHtmlTableString = "", lastExtractionSource = "";
   let STRICT_MODE = true, SHOW_BLANK_REASONS = true;
+  let ocrWorkerAvailable = false;
 
+  // ---------- OCR WORKER CLIENT ----------
+  async function checkOcrWorkerHealth() {
+    try {
+      const response = await fetch(`${PARSEK_OCR_WORKER_URL}/health`, { method: 'GET', cache: 'no-store' });
+      if (!response.ok) return false;
+      const result = await response.json();
+      return result.status === 'ok' && result.cloudconvert === 'configured';
+    } catch { return false; }
+  }
+
+  async function extractWithOcrWorker(pdfArrayBuffer, onProgress) {
+    onProgress('Uploading to CloudConvert OCR...');
+    const bytes = new Uint8Array(pdfArrayBuffer);
+    let binary = '';
+    const chunkSize = 32768;
+    for (let i = 0; i < bytes.length; i += chunkSize) {
+      const chunk = bytes.subarray(i, Math.min(i + chunkSize, bytes.length));
+      binary += String.fromCharCode.apply(null, chunk);
+    }
+    const pdfBase64 = btoa(binary);
+    
+    onProgress('Processing with CloudConvert OCR...');
+    const response = await fetch(`${PARSEK_OCR_WORKER_URL}/extract`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ pdf: pdfBase64 })
+    });
+    
+    const result = await response.json();
+    if (!result.success) throw new Error(result.error || 'OCR extraction failed');
+    
+    return { text: result.text, source: 'CloudConvert OCR', characters: result.characters };
+  }
+
+  // ---------- RUNTIME LOADERS ----------
   function loadPdfJsIfNeeded() {
     return new Promise((resolve, reject) => {
       if (window.pdfjsLib && typeof window.pdfjsLib.getDocument === 'function') { resolve(); return; }
@@ -609,24 +596,20 @@ Will a Recipient be entitled to request a Direct In-Plan Roth Rollover
 `;
 
   function qs(sel) { return document.querySelector('#docuwaivz-app ' + sel); }
-  function showOverlay(msg) { 
-    const o = qs('#results-loading-overlay'); 
-    if (o) { 
-      o.classList.remove('hidden'); 
-      o.style.display = 'flex'; 
-    } 
-  }
-  function hideOverlay() { 
-    const o = qs('#results-loading-overlay'); 
-    if (o) { 
-      o.classList.add('hidden'); 
-      o.style.display = 'none'; 
-    } 
-  }
+  function showOverlay(msg) { const o = qs('#results-loading-overlay'); if (o) { o.classList.remove('hidden'); o.style.display = 'flex'; } }
+  function hideOverlay() { const o = qs('#results-loading-overlay'); if (o) { o.classList.add('hidden'); o.style.display = 'none'; } }
   function updateStatus(text, isError = false, hideLoader = false) {
     const st = qs('#status-text'), ld = qs('#py-loader');
     if (st) { st.innerText = text; st.style.color = isError ? '#FCA5A5' : (hideLoader ? '#6EE7B7' : 'white'); }
     if (ld) { if (hideLoader || isError) ld.classList.add('hidden'); else ld.classList.remove('hidden'); }
+  }
+  function updateOcrBadge(active) {
+    const container = qs('#ocr-status'), badge = qs('#ocr-badge');
+    if (container) container.classList.remove('hidden');
+    if (badge) {
+      badge.className = active ? 'ocr-badge active' : 'ocr-badge inactive';
+      badge.textContent = active ? '☁️ OCR: Active' : '☁️ OCR: Unavailable';
+    }
   }
   function showError(msg) { const eb = qs('#error-box'), rb = qs('#retry-init-btn'); if (eb) { eb.innerHTML = '<strong>Error:</strong> ' + escapeHtml(msg); eb.classList.remove('hidden'); } if (rb && initializationInProgress) rb.classList.remove('hidden'); }
   function enableUpload() { const ul = qs('#upload-label'), ui = qs('#upload-icon'); if (ul) { ul.classList.remove('opacity-50', 'pointer-events-none'); ul.classList.add('enabled'); } if (ui) { ui.classList.remove('text-[#64748B]'); ui.classList.add('text-[#0b5fff]'); } }
@@ -680,32 +663,16 @@ Will a Recipient be entitled to request a Direct In-Plan Roth Rollover
   async function callExtractorBackend(cleanedText) {
     const modelSelect = qs('#llm-model'), model = modelSelect ? modelSelect.value : null;
     const payload = { document_text: cleanedText, vendor_hint: "Principal 401(k) Nonstandardized Adoption Agreement", model: model, display_order_md: displayOrderMD, strict_mode: true, return_evidence: true };
-    
-    // Add timeout for slow models (Gemini can be slow)
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 180000); // 3 minute timeout
-    
+    const timeoutId = setTimeout(() => controller.abort(), 180000);
     try {
-      const resp = await fetch(`${EXTRACTOR_API_BASE}/extract-plan`, { 
-        method: "POST", 
-        headers: { "Content-Type": "application/json" }, 
-        body: JSON.stringify(payload),
-        signal: controller.signal
-      });
+      const resp = await fetch(`${EXTRACTOR_API_BASE}/extract-plan`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload), signal: controller.signal });
       clearTimeout(timeoutId);
-      
-      if (!resp.ok) { 
-        const text = await resp.text(); 
-        throw new Error(`Extractor HTTP ${resp.status}: ${text.slice(0, 200)}...`); 
-      }
-      const data = await resp.json(); 
-      if (!data.rows || !Array.isArray(data.rows)) throw new Error("Missing rows[]"); 
-      return data.rows;
+      if (!resp.ok) { const text = await resp.text(); throw new Error(`Extractor HTTP ${resp.status}: ${text.slice(0, 200)}...`); }
+      const data = await resp.json(); if (!data.rows || !Array.isArray(data.rows)) throw new Error("Missing rows[]"); return data.rows;
     } catch (err) {
       clearTimeout(timeoutId);
-      if (err.name === 'AbortError') {
-        throw new Error(`Request timed out after 3 minutes. The ${model} model may be overloaded. Try GPT-5.2 instead.`);
-      }
+      if (err.name === 'AbortError') throw new Error(`Request timed out after 3 minutes. The ${model} model may be overloaded. Try GPT-5.2 instead.`);
       throw err;
     }
   }
@@ -715,39 +682,39 @@ Will a Recipient be entitled to request a Direct In-Plan Roth Rollover
   async function handleExportCopy() { if (!ensureExtractionAvailable()) return; try { await navigator.clipboard.writeText(lastHtmlTableString || buildHtmlTable(lastExtractionRows)); alert("Copied!"); } catch (e) { alert("Copy failed"); } }
   function handleExportHtml() { if (!ensureExtractionAvailable()) return; downloadFile("plan_extraction.html", "text/html;charset=utf-8", `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Plan Extraction</title></head><body>${lastHtmlTableString || buildHtmlTable(lastExtractionRows)}</body></html>`); }
   function handleExportCsv() { if (!ensureExtractionAvailable()) return; const displayOrder = parseDisplayOrder(displayOrderMD), rowLookup = buildRowLookup(lastExtractionRows); let csv = 'Field Name,Value,Status\n'; displayOrder.forEach(item => { const r = rowLookup[item.fieldName], v = r?.value ?? '', s = r?.status || ''; csv += `"${item.fieldName.replace(/"/g, '""')}","${String(v).replace(/"/g, '""')}","${String(s).replace(/"/g, '""')}"\n`; }); downloadFile("plan_extraction.csv", "text/csv;charset=utf-8", csv); }
-  function handleExportPdf() { if (!ensureExtractionAvailable()) return; const displayOrder = parseDisplayOrder(displayOrderMD), rowLookup = buildRowLookup(lastExtractionRows); let html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Plan Extraction Report</title><style>body{font-family:sans-serif;font-size:11px;}table{width:100%;border-collapse:collapse;}th{background:#0b5fff;color:white;padding:10px;text-align:left;}td{padding:8px;border:1px solid #cbd5e1;}.section{background:#f1f5f9;color:#0b5fff;font-weight:700;border-left:4px solid #0b5fff;}</style></head><body><h1 style="color:#0b5fff;">Plan Extraction Report</h1><table><thead><tr><th>Field</th><th>Value</th></tr></thead><tbody>`; let grp = null; displayOrder.forEach(item => { const r = rowLookup[item.fieldName], v = r?.value ?? ''; if (item.group !== grp) { grp = item.group; html += `<tr><td colspan="2" class="section">${escapeHtml(grp)}</td></tr>`; } html += `<tr><td>${escapeHtml(item.fieldName)}</td><td>${escapeHtml(v)}</td></tr>`; }); html += `</tbody></table><p style="margin-top:20px;color:#64748b;font-size:10px;">Generated by Adopt(k) - Waivz.ai</p></body></html>`; const w = window.open('', '_blank'); w.document.write(html); w.document.close(); w.focus(); setTimeout(() => w.print(), 250); }
-
-  function openDPFModal() { const m = document.getElementById('dpf-modal'); if (m) { m.classList.remove('hidden'); m.style.display = 'flex'; } }
-  function closeDPFModal() { const m = document.getElementById('dpf-modal'); if (m) { m.classList.add('hidden'); m.style.display = 'none'; } }
-  async function generateDPF() {
-    if (!lastExtractionRows || lastExtractionRows.length === 0) { alert("No extraction data available. Please upload and process an adoption agreement PDF first."); return; }
-    const companyRow = lastExtractionRows.find(r => r.label === "Company Name"), companyName = companyRow ? companyRow.value : "Plan";
-    const btn = document.getElementById('dpf-generate-btn'), originalText = btn ? btn.innerHTML : '';
-    if (btn) { btn.innerHTML = "⏳ Generating..."; btn.disabled = true; }
-    try {
-      const response = await fetch(`${EXTRACTOR_API_BASE}/fill-dpf`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ rows: lastExtractionRows, company_name: companyName }) });
-      if (!response.ok) { const errorText = await response.text(); throw new Error(errorText || `Server error: ${response.status}`); }
-      const blob = await response.blob(), safeCompany = companyName.replace(/[^a-zA-Z0-9\s\-_]/g, '').trim().replace(/\s+/g, '_').substring(0, 30);
-      const filename = `DPF_${safeCompany}_${new Date().toISOString().split('T')[0]}.docx`, url = URL.createObjectURL(blob), a = document.createElement('a');
-      a.href = url; a.download = filename; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
-      closeDPFModal(); alert(`✅ DPF Generated!\n\nFilename: ${filename}`);
-    } catch (error) { console.error("DPF generation failed:", error); alert(`❌ Failed to generate DPF\n\n${error.message}`); }
-    finally { if (btn) { btn.innerHTML = originalText; btn.disabled = false; } }
-  }
+  function handleExportPdf() { if (!ensureExtractionAvailable()) return; const displayOrder = parseDisplayOrder(displayOrderMD), rowLookup = buildRowLookup(lastExtractionRows); let html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Plan Extraction Report</title><style>body{font-family:sans-serif;font-size:11px;}table{width:100%;border-collapse:collapse;}th{background:#0b5fff;color:white;padding:10px;text-align:left;}td{padding:8px;border:1px solid #cbd5e1;}.section{background:#f1f5f9;color:#0b5fff;font-weight:700;border-left:4px solid #0b5fff;}.extraction-source{background:#fef3c7;color:#92400e;padding:4px 8px;border-radius:4px;font-size:10px;display:inline-block;margin-top:5px;}</style></head><body><h1 style="color:#0b5fff;">Plan Extraction Report</h1>${lastExtractionSource ? `<p class="extraction-source">Extracted via ${lastExtractionSource}</p>` : ''}<table><thead><tr><th>Field</th><th>Value</th></tr></thead><tbody>`; let grp = null; displayOrder.forEach(item => { const r = rowLookup[item.fieldName], v = r?.value ?? ''; if (item.group !== grp) { grp = item.group; html += `<tr><td colspan="2" class="section">${escapeHtml(grp)}</td></tr>`; } html += `<tr><td>${escapeHtml(item.fieldName)}</td><td>${escapeHtml(v)}</td></tr>`; }); html += `</tbody></table><p style="margin-top:20px;color:#64748b;font-size:10px;">Generated by Adopt(k) - Waivz.ai</p></body></html>`; const w = window.open('', '_blank'); w.document.write(html); w.document.close(); w.focus(); setTimeout(() => w.print(), 250); }
 
   async function initSystemEngineWithRuntimes() { try { await Promise.all([loadPdfJsIfNeeded(), loadPyodideRuntimeIfNeeded()]); } catch (err) { console.error(err); updateStatus("Runtime load failed", true, true); showError("Engine failed: " + err.message); return; } await initSystemEngine(); }
+  
   async function initSystemEngine() {
     if (initializationInProgress) return; initializationInProgress = true;
     const eb = qs('#error-box'), rb = qs('#retry-init-btn'), ld = qs('#py-loader');
     if (eb) eb.classList.add('hidden'); if (rb) rb.classList.add('hidden'); if (ld) ld.classList.remove('hidden');
-    updateStatus("Step 1/3: Initializing PDF Reader...");
+    
+    updateStatus("Step 1/4: Initializing PDF Reader...");
     if (!window.pdfjsLib || typeof window.pdfjsLib.getDocument !== 'function') { updateStatus("Init Failed (Step 1)", true, true); showError("PDF.js failed"); return; }
     pdfjsLibInstance = window.pdfjsLib;
-    updateStatus("Step 2/3: Loading Python Utility...");
+    
+    updateStatus("Step 2/4: Loading Python Utility...");
     try { pyodideInstance = await window.loadPyodide({ indexURL: "https://cdn.jsdelivr.net/pyodide/v0.25.0/full/" }); await pyodideInstance.runPythonAsync("import sys"); } catch (err) { console.error(err); updateStatus("Init Failed (Step 2)", true, true); showError(`Pyodide failed: ${err.message}`); return; }
-    updateStatus("Step 3/3: Loading Cleaning Scripts...");
+    
+    updateStatus("Step 3/4: Loading Cleaning Scripts...");
     try { await pyodideInstance.runPythonAsync(pythonCleaningScript); } catch (err) { console.error(err); updateStatus("Init Failed (Step 3)", true, true); showError("Cleaning script failed: " + err.message); return; }
-    updateStatus("Engine Ready", false, true); enableUpload(); initializationInProgress = false;
+    
+    updateStatus("Step 4/4: Checking OCR Service...");
+    try {
+      ocrWorkerAvailable = await checkOcrWorkerHealth();
+      updateOcrBadge(ocrWorkerAvailable);
+      console.log(ocrWorkerAvailable ? '[Adopt(k)] CloudConvert OCR available' : '[Adopt(k)] OCR unavailable, using PDF.js');
+    } catch (err) {
+      console.log('[Adopt(k)] OCR check failed:', err.message);
+      updateOcrBadge(false);
+    }
+    
+    const statusMsg = ocrWorkerAvailable ? "Engine Ready (CloudConvert OCR Active)" : "Engine Ready";
+    updateStatus(statusMsg, false, true); 
+    enableUpload(); 
+    initializationInProgress = false;
   }
 
   let selectedFile = null;
@@ -755,84 +722,87 @@ Will a Recipient be entitled to request a Direct In-Plan Roth Rollover
   function wireFileUpload() {
     const fi = qs('#file-upload'); if (!fi) return;
     
-    // Step 1: File selection - just show info, don't process
     fi.addEventListener('change', (event) => {
       const file = event.target.files[0]; 
-      if (!file || file.type !== 'application/pdf') { 
-        alert("Please upload a valid PDF file."); 
-        return; 
-      }
-      
+      if (!file || file.type !== 'application/pdf') { alert("Please upload a valid PDF file."); return; }
       selectedFile = file;
-      
-      // Show file info and process button
-      const fileInfoPanel = qs('#selected-file-info');
-      const fileName = qs('#selected-file-name');
-      const fileSize = qs('#selected-file-size');
-      
+      const fileInfoPanel = qs('#selected-file-info'), fileName = qs('#selected-file-name'), fileSize = qs('#selected-file-size');
       if (fileInfoPanel) fileInfoPanel.classList.remove('hidden');
       if (fileName) fileName.textContent = file.name;
       if (fileSize) fileSize.textContent = `Size: ${(file.size / 1024).toFixed(1)} KB`;
-      
       updateStatus("File selected. Click 'Process' when ready.", false, true);
     });
     
-    // Clear file button
     const clearBtn = qs('#clear-file-btn');
     if (clearBtn) {
       clearBtn.addEventListener('click', () => {
         selectedFile = null;
-        const fi = qs('#file-upload');
-        if (fi) fi.value = '';
-        const fileInfoPanel = qs('#selected-file-info');
-        if (fileInfoPanel) fileInfoPanel.classList.add('hidden');
+        const fi = qs('#file-upload'); if (fi) fi.value = '';
+        const fileInfoPanel = qs('#selected-file-info'); if (fileInfoPanel) fileInfoPanel.classList.add('hidden');
         updateStatus("Engine Ready", false, true);
       });
     }
     
-    // Step 2: Process button - actually process the file
     const processBtn = qs('#process-btn');
     if (processBtn) {
       processBtn.addEventListener('click', async () => {
         if (!selectedFile) { alert("Please select a file first."); return; }
         if (!pyodideInstance || !pdfjsLibInstance) { showError("Engine not ready."); return; }
         
-        const errorBox = qs('#error-box');
-        if (errorBox) errorBox.classList.add('hidden');
-        
-        // Disable process button and show processing state
+        const errorBox = qs('#error-box'); if (errorBox) errorBox.classList.add('hidden');
         processBtn.disabled = true;
         processBtn.innerHTML = '<span class="loader-dark" style="width:18px;height:18px;border-width:2px;"></span> Processing...';
         
         showOverlay();
         updateStatus("Reading PDF file...", false, false);
+        lastExtractionSource = "";
         
         const reader = new FileReader();
         reader.onload = async (e) => {
           try {
             const typedarray = new Uint8Array(e.target.result);
-            updateStatus("Extracting PDF Text...", false, false);
-            const loadingTask = pdfjsLibInstance.getDocument({ data: typedarray }), pdf = await loadingTask.promise;
             let fullText = "";
-            for (let i = 1; i <= pdf.numPages; i++) { 
-              if (i % 20 === 0 || i === 1) updateStatus(`Extracting (Page ${i}/${pdf.numPages})...`, false, false); 
-              const page = await pdf.getPage(i), tc = await page.getTextContent(); 
-              fullText += tc.items.map(item => item.str).join(' ') + "\n"; 
+
+            // STEP 1: Try CloudConvert OCR if available
+            if (ocrWorkerAvailable) {
+              try {
+                updateStatus("Processing with CloudConvert OCR...", false, false);
+                const arrayBuffer = typedarray.buffer.slice(typedarray.byteOffset, typedarray.byteOffset + typedarray.byteLength);
+                const result = await extractWithOcrWorker(arrayBuffer, (msg) => updateStatus(msg, false, false));
+                fullText = result.text;
+                lastExtractionSource = result.source;
+                console.log(`[Adopt(k)] OCR extraction: ${result.characters} chars`);
+              } catch (ocrErr) {
+                console.warn("[Adopt(k)] OCR failed, falling back to PDF.js:", ocrErr.message);
+                fullText = "";
+              }
             }
+
+            // STEP 2: Fallback to PDF.js
+            if (!fullText || fullText.length < 100) {
+              updateStatus("Extracting PDF Text (Local)...", false, false);
+              const loadingTask = pdfjsLibInstance.getDocument({ data: typedarray }), pdf = await loadingTask.promise;
+              fullText = "";
+              for (let i = 1; i <= pdf.numPages; i++) { 
+                if (i % 20 === 0 || i === 1) updateStatus(`Extracting (Page ${i}/${pdf.numPages})...`, false, false); 
+                const page = await pdf.getPage(i), tc = await page.getTextContent(); 
+                fullText += tc.items.map(item => item.str).join(' ') + "\n"; 
+              }
+              lastExtractionSource = "PDF.js (local)";
+            }
+            
             updateStatus("Normalizing Text...", false, false);
             const cleanFunc = pyodideInstance.globals.get('clean_extracted_text'), cleanedText = cleanFunc(fullText.replace(/\0/g, ''), true, false);
+            
             updateStatus("Analyzing with AI...", false, false);
             const rows = await callExtractorBackend(cleanedText);
             renderData(rows); 
             hideOverlay(); 
-            updateStatus("Analysis Complete", false, true);
+            updateStatus(`Analysis Complete (via ${lastExtractionSource})`, false, true);
             
-            // Reset for next file
             selectedFile = null;
-            const fileInfoPanel = qs('#selected-file-info');
-            if (fileInfoPanel) fileInfoPanel.classList.add('hidden');
-            const fileInput = qs('#file-upload');
-            if (fileInput) fileInput.value = '';
+            const fileInfoPanel = qs('#selected-file-info'); if (fileInfoPanel) fileInfoPanel.classList.add('hidden');
+            const fileInput = qs('#file-upload'); if (fileInput) fileInput.value = '';
             
           } catch (err) { 
             console.error(err); 
@@ -840,7 +810,6 @@ Will a Recipient be entitled to request a Direct In-Plan Roth Rollover
             showError("Error: " + err.message); 
             hideOverlay(); 
           } finally {
-            // Re-enable process button
             processBtn.disabled = false;
             processBtn.innerHTML = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg> Click to Process Document';
           }
@@ -859,39 +828,28 @@ Will a Recipient be entitled to request a Direct In-Plan Roth Rollover
 
   function wireButtons() {
     const retryBtn = qs('#retry-init-btn'); if (retryBtn) retryBtn.addEventListener('click', initSystemEngineWithRuntimes);
-    const copyBtn = qs('#export-copy-btn'), htmlBtn = qs('#export-html-btn'), pdfBtn = qs('#export-pdf-btn'), csvBtn = qs('#export-csv-btn'), nextStepBtn = qs('#export-nextstep-btn');
+    const copyBtn = qs('#export-copy-btn'), htmlBtn = qs('#export-html-btn'), pdfBtn = qs('#export-pdf-btn'), csvBtn = qs('#export-csv-btn');
     if (copyBtn) copyBtn.addEventListener('click', handleExportCopy);
     if (htmlBtn) htmlBtn.addEventListener('click', handleExportHtml);
     if (pdfBtn) pdfBtn.addEventListener('click', handleExportPdf);
     if (csvBtn) csvBtn.addEventListener('click', handleExportCsv);
-    if (nextStepBtn) nextStepBtn.addEventListener('click', openDPFModal);
 
-    // How to Use button and modal
     const howToUseBtn = qs('#how-to-use-btn'), helpModal = document.getElementById('help-modal'), helpModalClose = document.getElementById('help-modal-close'), helpModalClose2 = document.getElementById('help-modal-close-2');
     if (howToUseBtn) howToUseBtn.addEventListener('click', () => { if (helpModal) { helpModal.classList.remove('hidden'); helpModal.style.display = 'flex'; } });
     if (helpModalClose) helpModalClose.addEventListener('click', () => { if (helpModal) { helpModal.classList.add('hidden'); helpModal.style.display = 'none'; } });
     if (helpModalClose2) helpModalClose2.addEventListener('click', () => { if (helpModal) { helpModal.classList.add('hidden'); helpModal.style.display = 'none'; } });
     if (helpModal) helpModal.addEventListener('click', (e) => { if (e.target.id === 'help-modal') { helpModal.classList.add('hidden'); helpModal.style.display = 'none'; } });
 
-    // What's New button and modal
     const whatsNewBtn = qs('#whats-new-btn'), whatsNewModal = document.getElementById('whats-new-modal'), whatsNewModalClose = document.getElementById('whats-new-modal-close'), whatsNewCloseBtn = document.getElementById('whats-new-close-btn');
     if (whatsNewBtn) whatsNewBtn.addEventListener('click', () => { if (whatsNewModal) { whatsNewModal.classList.remove('hidden'); whatsNewModal.style.display = 'flex'; } });
     if (whatsNewModalClose) whatsNewModalClose.addEventListener('click', () => { if (whatsNewModal) { whatsNewModal.classList.add('hidden'); whatsNewModal.style.display = 'none'; } });
     if (whatsNewCloseBtn) whatsNewCloseBtn.addEventListener('click', () => { if (whatsNewModal) { whatsNewModal.classList.add('hidden'); whatsNewModal.style.display = 'none'; } });
     if (whatsNewModal) whatsNewModal.addEventListener('click', (e) => { if (e.target.id === 'whats-new-modal') { whatsNewModal.classList.add('hidden'); whatsNewModal.style.display = 'none'; } });
 
-    // Evidence modal
     const evidenceModalClose = document.getElementById('evidence-modal-close'), evidenceCloseBtn = document.getElementById('evidence-close-btn'), evidenceModal = document.getElementById('evidence-modal');
     if (evidenceModalClose) evidenceModalClose.addEventListener('click', window.closeEvidenceModal);
     if (evidenceCloseBtn) evidenceCloseBtn.addEventListener('click', window.closeEvidenceModal);
     if (evidenceModal) evidenceModal.addEventListener('click', (e) => { if (e.target.id === 'evidence-modal') window.closeEvidenceModal(); });
-
-    // DPF modal
-    const dpfModalClose = document.getElementById('dpf-modal-close'), dpfCancelBtn = document.getElementById('dpf-cancel-btn'), dpfGenerateBtn = document.getElementById('dpf-generate-btn'), dpfModal = document.getElementById('dpf-modal');
-    if (dpfModalClose) dpfModalClose.addEventListener('click', closeDPFModal);
-    if (dpfCancelBtn) dpfCancelBtn.addEventListener('click', closeDPFModal);
-    if (dpfGenerateBtn) dpfGenerateBtn.addEventListener('click', generateDPF);
-    if (dpfModal) dpfModal.addEventListener('click', (e) => { if (e.target.id === 'dpf-modal') closeDPFModal(); });
   }
 
   function init() { hideOverlay(); wireFileUpload(); wireButtons(); initSystemEngineWithRuntimes(); }
